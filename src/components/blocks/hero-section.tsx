@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface HeroSectionProps {
   badge?: {
@@ -38,32 +39,53 @@ export function HeroSection({
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col items-center text-center space-y-8">
           {badge && (
-            <Badge variant="secondary" className="px-4 py-2">
-              {badge.text}
-              {badge.action && (
-                <>
-                  <span className="mx-2">·</span>
-                  <Link
-                    to={badge.action.href}
-                    className="text-primary hover:underline"
-                  >
-                    {badge.action.text}
-                  </Link>
-                </>
-              )}
-            </Badge>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Badge variant="secondary" className="px-4 py-2">
+                {badge.text}
+                {badge.action && (
+                  <>
+                    <span className="mx-2">·</span>
+                    <Link
+                      to={badge.action.href}
+                      className="text-primary hover:underline"
+                    >
+                      {badge.action.text}
+                    </Link>
+                  </>
+                )}
+              </Badge>
+            </motion.div>
           )}
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight max-w-4xl">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight max-w-4xl"
+          >
             {title}
-          </h1>
+          </motion.h1>
 
-          <p className="text-xl text-muted-foreground max-w-2xl">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-xl text-muted-foreground max-w-2xl"
+          >
             {description}
-          </p>
+          </motion.p>
 
           {actions && actions.length > 0 && (
-            <div className="flex flex-wrap gap-4 justify-center pt-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-wrap gap-4 justify-center pt-4"
+            >
               {actions.map((action, index) => (
                 <Link key={index} to={action.href}>
                   <Button
@@ -79,11 +101,16 @@ export function HeroSection({
                   </Button>
                 </Link>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {image && (
-            <div className="w-full max-w-5xl mt-12">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="w-full max-w-5xl mt-12"
+            >
               <img
                 src={image.light}
                 alt={image.alt}
@@ -94,7 +121,7 @@ export function HeroSection({
                 alt={image.alt}
                 className="w-full h-auto rounded-xl shadow-2xl border border-border hidden dark:block"
               />
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
