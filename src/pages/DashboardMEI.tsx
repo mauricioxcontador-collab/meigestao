@@ -5,11 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { LogOut, DollarSign, TrendingUp, AlertCircle, FileText, Upload, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
+import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
 
 const DashboardMEI = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -19,6 +22,17 @@ const DashboardMEI = () => {
         return;
       }
       setUser(session.user);
+
+      // Load client data
+      const { data: clientData } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("mei_user_id", session.user.id)
+        .maybeSingle();
+
+      if (clientData) {
+        setClientId(clientData.id);
+      }
     };
 
     checkUser();
@@ -122,6 +136,14 @@ const DashboardMEI = () => {
             </Card>
           ))}
         </div>
+
+        {/* Financial Management */}
+        {clientId && (
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <RevenuesManager clientId={clientId} />
+            <ExpensesManager clientId={clientId} />
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
