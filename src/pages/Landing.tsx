@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, BarChart3, Bell, FileText, Shield, Zap } from "lucide-react";
+import { CheckCircle2, BarChart3, Bell, FileText, Shield, Zap, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { HeroSection } from "@/components/blocks/hero-section";
 import { Icons } from "@/components/ui/icons";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 const Landing = () => {
+  const [isAnnual, setIsAnnual] = useState(false);
+
   const features = [
     {
       icon: BarChart3,
@@ -143,6 +146,228 @@ const Landing = () => {
               ))}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.4 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl font-bold mb-4 text-foreground">
+              Planos que cabem no seu bolso
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Escolha o melhor plano para o seu MEI
+            </p>
+            
+            {/* Toggle Mensal/Anual */}
+            <div className="flex items-center justify-center gap-4 mb-12">
+              <span className={`text-lg font-medium transition-colors ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Mensal
+              </span>
+              <button
+                onClick={() => setIsAnnual(!isAnnual)}
+                className="relative w-16 h-8 rounded-full bg-primary transition-colors"
+              >
+                <motion.div
+                  className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md"
+                  animate={{ x: isAnnual ? 32 : 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </button>
+              <span className={`text-lg font-medium transition-colors ${isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Anual
+                <span className="ml-2 text-sm text-success">(Economize 20%)</span>
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Pricing Cards */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Plano Básico */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <Card className="p-8 hover:shadow-xl transition-shadow border-border h-full flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Básico</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-foreground">
+                      R$ {isAnnual ? '15,92' : '19,90'}
+                    </span>
+                    <span className="text-muted-foreground">/mês</span>
+                  </div>
+                  {isAnnual && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      R$ 191,04 cobrado anualmente
+                    </p>
+                  )}
+                </div>
+                
+                <ul className="space-y-3 mb-8 flex-grow">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Dashboard básico</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Controle de receitas e despesas</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Alertas de DAS via e-mail</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Relatórios mensais PDF</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">Chat com contador</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">Alertas via WhatsApp</span>
+                  </li>
+                </ul>
+
+                <Link to="/auth" className="w-full">
+                  <Button variant="outline" className="w-full">
+                    Começar Agora
+                  </Button>
+                </Link>
+              </Card>
+            </motion.div>
+
+            {/* Plano Profissional - Destaque */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <Card className="p-8 hover:shadow-xl transition-shadow border-primary border-2 h-full flex flex-col relative">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                  Mais Popular
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Profissional</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-foreground">
+                      R$ {isAnnual ? '20,79' : '25,99'}
+                    </span>
+                    <span className="text-muted-foreground">/mês</span>
+                  </div>
+                  {isAnnual && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      R$ 249,48 cobrado anualmente
+                    </p>
+                  )}
+                </div>
+                
+                <ul className="space-y-3 mb-8 flex-grow">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Tudo do plano Básico</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Dashboard completo com gráficos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Chat direto com contador</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Alertas via WhatsApp</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Relatórios avançados</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Suporte prioritário</span>
+                  </li>
+                </ul>
+
+                <Link to="/auth" className="w-full">
+                  <Button className="w-full gradient-primary shadow-glow">
+                    Começar Agora
+                  </Button>
+                </Link>
+              </Card>
+            </motion.div>
+
+            {/* Plano Premium */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <Card className="p-8 hover:shadow-xl transition-shadow border-border h-full flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Premium</h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-foreground">
+                      R$ {isAnnual ? '27,19' : '33,99'}
+                    </span>
+                    <span className="text-muted-foreground">/mês</span>
+                  </div>
+                  {isAnnual && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      R$ 326,28 cobrado anualmente
+                    </p>
+                  )}
+                </div>
+                
+                <ul className="space-y-3 mb-8 flex-grow">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Tudo do plano Profissional</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Consultoria mensal com contador</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Preparação da DASN-SIMEI</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Upload ilimitado de documentos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Análise financeira avançada</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground">Suporte 24/7</span>
+                  </li>
+                </ul>
+
+                <Link to="/auth" className="w-full">
+                  <Button variant="outline" className="w-full">
+                    Começar Agora
+                  </Button>
+                </Link>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       </section>
 
