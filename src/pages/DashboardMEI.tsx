@@ -13,6 +13,8 @@ const DashboardMEI = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
+  const [annualRevenue, setAnnualRevenue] = useState<number>(0);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -32,6 +34,7 @@ const DashboardMEI = () => {
 
       if (clientData) {
         setClientId(clientData.id);
+        loadRevenues(clientData.id);
       }
     };
 
@@ -48,6 +51,41 @@ const DashboardMEI = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const loadRevenues = async (clientId: string) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    // Get all revenues for the current year
+    const { data: revenues, error } = await supabase
+      .from("revenues")
+      .select("valor, data")
+      .eq("client_id", clientId)
+      .gte("data", `${currentYear}-01-01`)
+      .lte("data", `${currentYear}-12-31`);
+
+    if (error) {
+      console.error("Error loading revenues:", error);
+      return;
+    }
+
+    if (revenues) {
+      // Calculate annual revenue
+      const annual = revenues.reduce((sum, rev) => sum + Number(rev.valor), 0);
+      setAnnualRevenue(annual);
+
+      // Calculate monthly revenue (current month)
+      const monthly = revenues
+        .filter((rev) => {
+          const revenueDate = new Date(rev.data);
+          return revenueDate.getMonth() === currentMonth && 
+                 revenueDate.getFullYear() === currentYear;
+        })
+        .reduce((sum, rev) => sum + Number(rev.valor), 0);
+      setMonthlyRevenue(monthly);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({
@@ -57,20 +95,29 @@ const DashboardMEI = () => {
     navigate("/");
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const percentageUsed = ((annualRevenue / 81000) * 100).toFixed(1);
+
   const metrics = [
     {
       title: "Faturamento Mensal",
-      value: "R$ 0,00",
+      value: formatCurrency(monthlyRevenue),
       description: "Mês atual",
       icon: DollarSign,
       color: "text-primary"
     },
     {
       title: "Faturamento Anual",
-      value: "R$ 0,00",
-      description: "Limite: R$ 81.000,00",
+      value: formatCurrency(annualRevenue),
+      description: `${percentageUsed}% do limite (R$ 81.000,00)`,
       icon: TrendingUp,
-      color: "text-success"
+      color: annualRevenue > 81000 ? "text-destructive" : "text-success"
     },
     {
       title: "DAS do Mês",
@@ -140,7 +187,7 @@ const DashboardMEI = () => {
         {/* Financial Management */}
         {clientId && (
           <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <RevenuesManager clientId={clientId} />
+            <RevenuesManager clientId={clientId} onUpdate={() => loadRevenues(clientId)} />
             <ExpensesManager clientId={clientId} />
           </div>
         )}
