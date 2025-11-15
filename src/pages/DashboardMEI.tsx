@@ -7,6 +7,7 @@ import { LogOut, DollarSign, TrendingUp, AlertCircle, FileText, Upload, MessageC
 import { useToast } from "@/hooks/use-toast";
 import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
 import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
+import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
 
 const DashboardMEI = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const DashboardMEI = () => {
   const [clientId, setClientId] = useState<string | null>(null);
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
   const [annualRevenue, setAnnualRevenue] = useState<number>(0);
+  const [showClientForm, setShowClientForm] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -35,6 +37,8 @@ const DashboardMEI = () => {
       if (clientData) {
         setClientId(clientData.id);
         loadRevenues(clientData.id);
+      } else {
+        setShowClientForm(true);
       }
     };
 
@@ -153,14 +157,25 @@ const DashboardMEI = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Olá, {user?.user_metadata?.full_name || "MEI"}!
-          </h1>
-          <p className="text-muted-foreground">
-            Bem-vindo ao seu painel de controle
-          </p>
-        </div>
+        {showClientForm ? (
+          <ClientRegistrationForm 
+            userId={user.id} 
+            onSuccess={(newClientId) => {
+              setClientId(newClientId);
+              setShowClientForm(false);
+              loadRevenues(newClientId);
+            }} 
+          />
+        ) : (
+          <>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Olá, {user?.user_metadata?.full_name || "MEI"}!
+              </h1>
+              <p className="text-muted-foreground">
+                Bem-vindo ao seu painel de controle
+              </p>
+            </div>
 
         {/* Metrics Grid */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -252,6 +267,8 @@ const DashboardMEI = () => {
             </div>
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
     </div>
   );
