@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, BarChart3, Bell, FileText, Shield, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import { HeroSection } from "@/components/blocks/hero-section";
+import { Icons } from "@/components/ui/icons";
 
 const Landing = () => {
   const features = [
@@ -53,30 +55,40 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-6 mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Gestão Contábil para MEI
-              <span className="block gradient-primary bg-clip-text text-transparent mt-2">
-                Simples, Rápida e Automatizada
-              </span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Mantenha seu MEI em dia com alertas automáticos, controle financeiro completo 
-              e suporte direto do seu contador
-            </p>
-            <div className="flex gap-4 justify-center pt-4">
-              <Link to="/auth">
-                <Button size="lg" className="gradient-primary shadow-glow text-lg px-8">
-                  Criar Conta Grátis
-                </Button>
-              </Link>
-            </div>
-          </div>
+      <HeroSection
+        badge={{
+          text: "Plataforma completa para MEI",
+          action: {
+            text: "Saiba mais",
+            href: "/auth",
+          },
+        }}
+        title="Gestão Contábil para MEI Simples, Rápida e Automatizada"
+        description="Mantenha seu MEI em dia com alertas automáticos, controle financeiro completo e suporte direto do seu contador"
+        actions={[
+          {
+            text: "Criar Conta Grátis",
+            href: "/auth",
+            variant: "glow",
+          },
+          {
+            text: "Ver Demonstração",
+            href: "/auth",
+            variant: "outline",
+            icon: <Icons.gitHub className="h-5 w-5" />,
+          },
+        ]}
+        image={{
+          light: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=2400&q=80",
+          dark: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=2400&q=80",
+          alt: "Dashboard MEI Gestão",
+        }}
+      />
 
+      <section className="px-4">
+        <div className="container mx-auto max-w-6xl">
           {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20 mt-20">
             {features.map((feature, index) => (
               <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-border">
                 <feature.icon className="w-12 h-12 text-primary mb-4" />
