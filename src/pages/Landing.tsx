@@ -80,8 +80,8 @@ const Landing = () => {
           },
         ]}
         image={{
-          light: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=2400&q=80",
-          dark: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=2400&q=80",
+          light: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
+          dark: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
           alt: "Dashboard MEI Gestão",
         }}
       />
@@ -95,8 +95,8 @@ const Landing = () => {
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <Card className="p-6 hover:shadow-lg transition-shadow border-border h-full">
                   <feature.icon className="w-12 h-12 text-primary mb-4" />
@@ -109,10 +109,10 @@ const Landing = () => {
 
           {/* Benefits Section */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.4 }}
             className="bg-card rounded-2xl p-8 md:p-12 border border-border"
           >
             <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
@@ -133,8 +133,8 @@ const Landing = () => {
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.3, delay: index * 0.03 }}
                   className="flex items-center gap-3"
                 >
                   <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
@@ -149,10 +149,10 @@ const Landing = () => {
       {/* CTA Section */}
       <section className="py-20 px-4 gradient-primary">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.4 }}
           className="container mx-auto max-w-4xl text-center"
         >
           <h2 className="text-4xl font-bold text-white mb-6">
