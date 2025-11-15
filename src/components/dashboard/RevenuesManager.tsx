@@ -27,7 +27,7 @@ interface Revenue {
   categoria: string;
 }
 
-export function RevenuesManager({ clientId }: { clientId: string }) {
+export function RevenuesManager({ clientId, onUpdate }: { clientId: string; onUpdate?: () => void }) {
   const { toast } = useToast();
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -89,6 +89,7 @@ export function RevenuesManager({ clientId }: { clientId: string }) {
         setEditingId(null);
         reset();
         loadRevenues();
+        onUpdate?.();
       }
     } else {
       const { error } = await supabase
@@ -109,6 +110,7 @@ export function RevenuesManager({ clientId }: { clientId: string }) {
         setIsAdding(false);
         reset();
         loadRevenues();
+        onUpdate?.();
       }
     }
   };
