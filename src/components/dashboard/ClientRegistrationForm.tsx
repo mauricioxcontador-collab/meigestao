@@ -10,6 +10,37 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Building2 } from "lucide-react";
 
+const validateCNPJ = (cnpj: string): boolean => {
+  const cleaned = cnpj.replace(/\D/g, "");
+  
+  if (cleaned.length !== 14) return false;
+  
+  // Rejeita CNPJs com todos os dígitos iguais
+  if (/^(\d)\1+$/.test(cleaned)) return false;
+  
+  // Validação do primeiro dígito verificador
+  let sum = 0;
+  let weight = 5;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(cleaned.charAt(i)) * weight;
+    weight = weight === 2 ? 9 : weight - 1;
+  }
+  let digit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (digit !== parseInt(cleaned.charAt(12))) return false;
+  
+  // Validação do segundo dígito verificador
+  sum = 0;
+  weight = 6;
+  for (let i = 0; i < 13; i++) {
+    sum += parseInt(cleaned.charAt(i)) * weight;
+    weight = weight === 2 ? 9 : weight - 1;
+  }
+  digit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (digit !== parseInt(cleaned.charAt(13))) return false;
+  
+  return true;
+};
+
 const clientSchema = z.object({
   razao_social: z.string().min(3, "Razão social deve ter no mínimo 3 caracteres").max(200, "Razão social muito longa"),
   cnpj: z.string()
@@ -18,7 +49,8 @@ const clientSchema = z.object({
     .refine((val) => {
       const cleaned = val.replace(/\D/g, "");
       return cleaned.length === 14;
-    }, "CNPJ deve ter 14 dígitos"),
+    }, "CNPJ deve ter 14 dígitos")
+    .refine((val) => validateCNPJ(val), "CNPJ inválido"),
   atividade: z.string().min(3, "Atividade deve ter no mínimo 3 caracteres").max(200, "Atividade muito longa"),
   data_abertura: z.string().optional(),
 });
