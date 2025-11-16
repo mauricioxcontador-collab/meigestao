@@ -14,6 +14,7 @@ const DashboardMEI = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [clientActivity, setClientActivity] = useState<string>("");
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
   const [annualRevenue, setAnnualRevenue] = useState<number>(0);
   const [showClientForm, setShowClientForm] = useState(false);
@@ -30,12 +31,13 @@ const DashboardMEI = () => {
       // Load client data
       const { data: clientData } = await supabase
         .from("clients")
-        .select("id")
+        .select("id, atividade")
         .eq("mei_user_id", session.user.id)
         .maybeSingle();
 
       if (clientData) {
         setClientId(clientData.id);
+        setClientActivity(clientData.atividade || "");
         loadRevenues(clientData.id);
       } else {
         setShowClientForm(true);
@@ -106,6 +108,28 @@ const DashboardMEI = () => {
     }).format(value);
   };
 
+  const getDASValue = (activity: string): number => {
+    const activityLower = activity.toLowerCase();
+    
+    // Comércio e Serviços (simultaneamente)
+    if (activityLower.includes("comércio") && activityLower.includes("serviço")) {
+      return 81.90;
+    }
+    // Prestação de Serviços
+    if (activityLower.includes("serviço")) {
+      return 80.90;
+    }
+    // Comércio ou Indústria (padrão)
+    return 76.90;
+  };
+
+  const getDASDescription = (): string => {
+    const now = new Date();
+    const dueDate = new Date(now.getFullYear(), now.getMonth(), 20);
+    
+    return `Vencimento: ${dueDate.toLocaleDateString('pt-BR')}`;
+  };
+
   const percentageUsed = ((annualRevenue / 81000) * 100).toFixed(1);
 
   const metrics = [
@@ -125,8 +149,8 @@ const DashboardMEI = () => {
     },
     {
       title: "DAS do Mês",
-      value: "R$ 0,00",
-      description: "Vencimento: --/--/----",
+      value: formatCurrency(getDASValue(clientActivity)),
+      description: getDASDescription(),
       icon: AlertCircle,
       color: "text-warning"
     }
