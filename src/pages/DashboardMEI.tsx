@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { LogOut, DollarSign, TrendingUp, AlertCircle, FileText, Upload, MessageCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
 import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
+import NavigationBar from "@/components/dashboard/NavigationBar";
+import NotificationsSidebar from "@/components/dashboard/NotificationsSidebar";
+import RevenueExpenseChart from "@/components/dashboard/RevenueExpenseChart";
+
+interface MonthlyData {
+  month: string;
+  receitas: number;
+  despesas: number;
+}
 
 const DashboardMEI = () => {
   const navigate = useNavigate();
@@ -17,7 +25,14 @@ const DashboardMEI = () => {
   const [clientActivity, setClientActivity] = useState<string>("");
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
   const [annualRevenue, setAnnualRevenue] = useState<number>(0);
+  const [totalExpenses, setTotalExpenses] = useState<number>(0);
   const [showClientForm, setShowClientForm] = useState(false);
+  const [chartData, setChartData] = useState<MonthlyData[]>([]);
+
+  // Ativar dark mode por padrão
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -38,7 +53,7 @@ const DashboardMEI = () => {
       if (clientData) {
         setClientId(clientData.id);
         setClientActivity(clientData.atividade || "");
-        loadRevenues(clientData.id);
+        loadFinancialData(clientData.id);
       } else {
         setShowClientForm(true);
       }
@@ -57,21 +72,29 @@ const DashboardMEI = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const loadRevenues = async (clientId: string) => {
+  const loadFinancialData = async (clientId: string) => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
     // Get all revenues for the current year
-    const { data: revenues, error } = await supabase
+    const { data: revenues, error: revenuesError } = await supabase
       .from("revenues")
       .select("valor, data")
       .eq("client_id", clientId)
       .gte("data", `${currentYear}-01-01`)
       .lte("data", `${currentYear}-12-31`);
 
-    if (error) {
-      console.error("Error loading revenues:", error);
+    // Get all expenses for the current year
+    const { data: expenses, error: expensesError } = await supabase
+      .from("expenses")
+      .select("valor, data")
+      .eq("client_id", clientId)
+      .gte("data", `${currentYear}-01-01`)
+      .lte("data", `${currentYear}-12-31`);
+
+    if (revenuesError || expensesError) {
+      console.error("Error loading financial data:", revenuesError || expensesError);
       return;
     }
 
@@ -90,16 +113,40 @@ const DashboardMEI = () => {
         .reduce((sum, rev) => sum + Number(rev.valor), 0);
       setMonthlyRevenue(monthly);
     }
+
+    if (expenses) {
+      // Calculate total expenses
+      const total = expenses.reduce((sum, exp) => sum + Number(exp.valor), 0);
+      setTotalExpenses(total);
+    }
+
+    // Generate chart data
+    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const monthlyData: MonthlyData[] = months.map((month, index) => {
+      const monthRevenues = revenues
+        ?.filter((rev) => {
+          const date = new Date(rev.data);
+          return date.getMonth() === index && date.getFullYear() === currentYear;
+        })
+        .reduce((sum, rev) => sum + Number(rev.valor), 0) || 0;
+
+      const monthExpenses = expenses
+        ?.filter((exp) => {
+          const date = new Date(exp.data);
+          return date.getMonth() === index && date.getFullYear() === currentYear;
+        })
+        .reduce((sum, exp) => sum + Number(exp.valor), 0) || 0;
+
+      return {
+        month,
+        receitas: monthRevenues,
+        despesas: monthExpenses,
+      };
+    });
+
+    setChartData(monthlyData);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logout realizado",
-      description: "Até logo!",
-    });
-    navigate("/");
-  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -130,54 +177,14 @@ const DashboardMEI = () => {
     return `Vencimento: ${dueDate.toLocaleDateString('pt-BR')}`;
   };
 
-  const percentageUsed = ((annualRevenue / 81000) * 100).toFixed(1);
-
-  const metrics = [
-    {
-      title: "Faturamento Mensal",
-      value: formatCurrency(monthlyRevenue),
-      description: "Mês atual",
-      icon: DollarSign,
-      color: "text-primary"
-    },
-    {
-      title: "Faturamento Anual",
-      value: formatCurrency(annualRevenue),
-      description: `${percentageUsed}% do limite (R$ 81.000,00)`,
-      icon: TrendingUp,
-      color: annualRevenue > 81000 ? "text-destructive" : "text-success"
-    },
-    {
-      title: "DAS do Mês",
-      value: formatCurrency(getDASValue(clientActivity)),
-      description: getDASDescription(),
-      icon: AlertCircle,
-      color: "text-warning"
-    }
-  ];
+  const netProfit = annualRevenue - totalExpenses;
 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-primary" />
-            <span className="text-xl font-bold text-foreground">MEI Gestão</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden md:block">
-              {user?.email}
-            </span>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <NavigationBar />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
@@ -187,111 +194,97 @@ const DashboardMEI = () => {
             onSuccess={(newClientId) => {
               setClientId(newClientId);
               setShowClientForm(false);
-              loadRevenues(newClientId);
+              loadFinancialData(newClientId);
             }} 
           />
         ) : (
-          <>
-            <div className="mb-8">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">
-                Olá, {user?.user_metadata?.full_name || "MEI"}!
+                Dashboard MEI
               </h1>
               <p className="text-muted-foreground">
-                Bem-vindo ao seu painel de controle
+                Seja bem-vindo(a).
               </p>
             </div>
 
-        {/* Metrics Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {metrics.map((metric, index) => (
-            <Card key={index} className="border-border hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {metric.title}
-                </CardTitle>
-                <metric.icon className={`h-5 w-5 ${metric.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">
-                  {metric.value}
+            {/* Layout: Sidebar + Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Notifications Sidebar */}
+              <div className="lg:col-span-1">
+                <NotificationsSidebar 
+                  annualRevenue={annualRevenue}
+                  dasValue={getDASValue(clientActivity)}
+                  dasDescription={getDASDescription()}
+                />
+              </div>
+
+              {/* Main Content Area */}
+              <div className="lg:col-span-3 space-y-6">
+                {/* Metrics Cards */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Card className="bg-gradient-revenue border-none text-white">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium opacity-90">
+                        Minhas Receitas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold mb-1">
+                        {formatCurrency(annualRevenue)}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-card border-border">
+                    <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        Minhas Despesas
+                      </CardTitle>
+                      <TrendingDown className="w-5 h-5 text-chart-2" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-foreground mb-1">
+                        {formatCurrency(totalExpenses)}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-profit border-none text-white">
+                    <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                      <CardTitle className="text-sm font-medium opacity-90">
+                        Meu Lucro Líquido
+                      </CardTitle>
+                      <TrendingUp className="w-5 h-5 opacity-90" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold mb-1">
+                        {formatCurrency(netProfit)}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {metric.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
-        {/* Financial Management */}
-        {clientId && (
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <RevenuesManager clientId={clientId} onUpdate={() => loadRevenues(clientId)} />
-            <ExpensesManager clientId={clientId} />
-          </div>
-        )}
+                {/* Chart */}
+                <RevenueExpenseChart data={chartData} />
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-primary" />
-                Enviar Documentos
-              </CardTitle>
-              <CardDescription>
-                Envie suas notas fiscais e recibos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full gradient-primary">
-                <Upload className="w-4 h-4 mr-2" />
-                Fazer Upload
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-primary" />
-                Falar com Contador
-              </CardTitle>
-              <CardDescription>
-                Tire suas dúvidas diretamente
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Abrir Chat
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
-              Atividades Recentes
-            </CardTitle>
-            <CardDescription>
-              Últimas movimentações da sua conta
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhuma atividade registrada ainda</p>
-              <p className="text-sm mt-2">
-                Comece enviando seus documentos ou lançando receitas
-              </p>
+                {/* Financial Management */}
+                {clientId && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <RevenuesManager 
+                      clientId={clientId} 
+                      onUpdate={() => loadFinancialData(clientId)} 
+                    />
+                    <ExpensesManager 
+                      clientId={clientId}
+                      onUpdate={() => loadFinancialData(clientId)}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-          </>
+          </div>
         )}
       </div>
     </div>
