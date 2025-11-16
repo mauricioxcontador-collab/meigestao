@@ -27,7 +27,7 @@ interface Expense {
   categoria: string;
 }
 
-export function ExpensesManager({ clientId }: { clientId: string }) {
+export function ExpensesManager({ clientId, onUpdate }: { clientId: string; onUpdate?: () => void }) {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -89,6 +89,7 @@ export function ExpensesManager({ clientId }: { clientId: string }) {
         setEditingId(null);
         reset();
         loadExpenses();
+        onUpdate?.();
       }
     } else {
       const { error } = await supabase
@@ -109,6 +110,7 @@ export function ExpensesManager({ clientId }: { clientId: string }) {
         setIsAdding(false);
         reset();
         loadExpenses();
+        onUpdate?.();
       }
     }
   };
