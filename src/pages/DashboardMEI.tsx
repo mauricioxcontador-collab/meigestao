@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, DollarSign, TrendingUp, AlertCircle, FileText, Upload, MessageCircle, TrendingDown } from "lucide-react";
+import { LogOut, DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
 import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
+import { useForm } from "react-hook-form";
 
 interface Revenue {
   id: string;
@@ -28,7 +31,18 @@ interface Expense {
 
 function RevenuesList({ clientId }: { clientId: string }) {
   const [revenues, setRevenues] = useState<Revenue[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    defaultValues: {
+      valor: "",
+      descricao: "",
+      categoria: "",
+      data: "",
+    }
+  });
 
   useEffect(() => {
     loadRevenues();
@@ -52,6 +66,76 @@ function RevenuesList({ clientId }: { clientId: string }) {
     }
   };
 
+  const onSubmit = async (formData: any) => {
+    const revenueData = {
+      client_id: clientId,
+      valor: Number(formData.valor.replace(",", ".")),
+      descricao: formData.descricao.trim(),
+      data: formData.data,
+      categoria: formData.categoria.trim(),
+    };
+
+    if (editingId) {
+      const { error } = await supabase
+        .from("revenues")
+        .update(revenueData)
+        .eq("id", editingId);
+
+      if (error) {
+        toast({
+          title: "Erro ao atualizar receita",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Receita atualizada",
+          description: "Receita atualizada com sucesso!",
+        });
+        setEditingId(null);
+        reset();
+        loadRevenues();
+      }
+    } else {
+      const { error } = await supabase
+        .from("revenues")
+        .insert(revenueData);
+
+      if (error) {
+        toast({
+          title: "Erro ao adicionar receita",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Receita adicionada",
+          description: "Receita adicionada com sucesso!",
+        });
+        setIsAdding(false);
+        reset();
+        loadRevenues();
+      }
+    }
+  };
+
+  const startEdit = (revenue: Revenue) => {
+    setEditingId(revenue.id);
+    setIsAdding(false);
+    reset({
+      valor: revenue.valor.toString(),
+      descricao: revenue.descricao,
+      data: revenue.data,
+      categoria: revenue.categoria,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setIsAdding(false);
+    reset();
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -62,10 +146,73 @@ function RevenuesList({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Receitas Cadastradas</CardTitle>
-        <CardDescription>Lista de todas as suas receitas</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Receitas Cadastradas</CardTitle>
+            <CardDescription>Lista de todas as suas receitas</CardDescription>
+          </div>
+          {!isAdding && !editingId && (
+            <Button onClick={() => setIsAdding(true)} className="gradient-primary">
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Receita
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
+        {(isAdding || editingId) && (
+          <Card className="mb-4 border-primary">
+            <CardContent className="pt-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="valor">Valor *</Label>
+                    <Input
+                      id="valor"
+                      {...register("valor", { required: true })}
+                      placeholder="0,00"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="data">Data *</Label>
+                    <Input
+                      id="data"
+                      type="date"
+                      {...register("data", { required: true })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="descricao">Descrição *</Label>
+                    <Input
+                      id="descricao"
+                      {...register("descricao", { required: true })}
+                      placeholder="Ex: Venda de produto"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="categoria">Categoria *</Label>
+                    <Input
+                      id="categoria"
+                      {...register("categoria", { required: true })}
+                      placeholder="Ex: Vendas"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" className="gradient-primary">
+                    <Save className="w-4 h-4 mr-2" />
+                    {editingId ? "Atualizar" : "Salvar"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={cancelEdit}>
+                    <X className="w-4 h-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+        
         {revenues.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
         ) : (
@@ -73,23 +220,34 @@ function RevenuesList({ clientId }: { clientId: string }) {
             {revenues.map((revenue) => (
               <Card key={revenue.id} className="border-border">
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Valor</p>
-                      <p className="text-lg font-semibold text-success">{formatCurrency(revenue.valor)}</p>
+                  <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valor</p>
+                        <p className="text-lg font-semibold text-success">{formatCurrency(revenue.valor)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Data</p>
+                        <p className="text-lg font-medium">{new Date(revenue.data).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Descrição</p>
+                        <p className="text-base">{revenue.descricao}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Categoria</p>
+                        <p className="text-base">{revenue.categoria}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Data</p>
-                      <p className="text-lg font-medium">{new Date(revenue.data).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Descrição</p>
-                      <p className="text-base">{revenue.descricao}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Categoria</p>
-                      <p className="text-base">{revenue.categoria}</p>
-                    </div>
+                    {!isAdding && !editingId && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => startEdit(revenue)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -103,7 +261,18 @@ function RevenuesList({ clientId }: { clientId: string }) {
 
 function ExpensesList({ clientId }: { clientId: string }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    defaultValues: {
+      valor: "",
+      descricao: "",
+      categoria: "",
+      data: "",
+    }
+  });
 
   useEffect(() => {
     loadExpenses();
@@ -127,6 +296,76 @@ function ExpensesList({ clientId }: { clientId: string }) {
     }
   };
 
+  const onSubmit = async (formData: any) => {
+    const expenseData = {
+      client_id: clientId,
+      valor: Number(formData.valor.replace(",", ".")),
+      descricao: formData.descricao.trim(),
+      data: formData.data,
+      categoria: formData.categoria.trim(),
+    };
+
+    if (editingId) {
+      const { error } = await supabase
+        .from("expenses")
+        .update(expenseData)
+        .eq("id", editingId);
+
+      if (error) {
+        toast({
+          title: "Erro ao atualizar despesa",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Despesa atualizada",
+          description: "Despesa atualizada com sucesso!",
+        });
+        setEditingId(null);
+        reset();
+        loadExpenses();
+      }
+    } else {
+      const { error } = await supabase
+        .from("expenses")
+        .insert(expenseData);
+
+      if (error) {
+        toast({
+          title: "Erro ao adicionar despesa",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Despesa adicionada",
+          description: "Despesa adicionada com sucesso!",
+        });
+        setIsAdding(false);
+        reset();
+        loadExpenses();
+      }
+    }
+  };
+
+  const startEdit = (expense: Expense) => {
+    setEditingId(expense.id);
+    setIsAdding(false);
+    reset({
+      valor: expense.valor.toString(),
+      descricao: expense.descricao,
+      data: expense.data,
+      categoria: expense.categoria,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setIsAdding(false);
+    reset();
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -137,10 +376,73 @@ function ExpensesList({ clientId }: { clientId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Despesas Cadastradas</CardTitle>
-        <CardDescription>Lista de todas as suas despesas</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Despesas Cadastradas</CardTitle>
+            <CardDescription>Lista de todas as suas despesas</CardDescription>
+          </div>
+          {!isAdding && !editingId && (
+            <Button onClick={() => setIsAdding(true)} className="gradient-primary">
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Despesa
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
+        {(isAdding || editingId) && (
+          <Card className="mb-4 border-primary">
+            <CardContent className="pt-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="valor">Valor *</Label>
+                    <Input
+                      id="valor"
+                      {...register("valor", { required: true })}
+                      placeholder="0,00"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="data">Data *</Label>
+                    <Input
+                      id="data"
+                      type="date"
+                      {...register("data", { required: true })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="descricao">Descrição *</Label>
+                    <Input
+                      id="descricao"
+                      {...register("descricao", { required: true })}
+                      placeholder="Ex: Compra de material"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="categoria">Categoria *</Label>
+                    <Input
+                      id="categoria"
+                      {...register("categoria", { required: true })}
+                      placeholder="Ex: Material"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" className="gradient-primary">
+                    <Save className="w-4 h-4 mr-2" />
+                    {editingId ? "Atualizar" : "Salvar"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={cancelEdit}>
+                    <X className="w-4 h-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
         {expenses.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Nenhuma despesa cadastrada</p>
         ) : (
@@ -148,23 +450,34 @@ function ExpensesList({ clientId }: { clientId: string }) {
             {expenses.map((expense) => (
               <Card key={expense.id} className="border-border">
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Valor</p>
-                      <p className="text-lg font-semibold text-destructive">{formatCurrency(expense.valor)}</p>
+                  <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valor</p>
+                        <p className="text-lg font-semibold text-destructive">{formatCurrency(expense.valor)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Data</p>
+                        <p className="text-lg font-medium">{new Date(expense.data).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Descrição</p>
+                        <p className="text-base">{expense.descricao}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Categoria</p>
+                        <p className="text-base">{expense.categoria}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Data</p>
-                      <p className="text-lg font-medium">{new Date(expense.data).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Descrição</p>
-                      <p className="text-base">{expense.descricao}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Categoria</p>
-                      <p className="text-base">{expense.categoria}</p>
-                    </div>
+                    {!isAdding && !editingId && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => startEdit(expense)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -465,67 +778,6 @@ const DashboardMEI = () => {
                 {clientId && <ExpensesList clientId={clientId} />}
               </TabsContent>
             </Tabs>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-primary" />
-                Enviar Documentos
-              </CardTitle>
-              <CardDescription>
-                Envie suas notas fiscais e recibos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full gradient-primary">
-                <Upload className="w-4 h-4 mr-2" />
-                Fazer Upload
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-primary" />
-                Falar com Contador
-              </CardTitle>
-              <CardDescription>
-                Tire suas dúvidas diretamente
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Abrir Chat
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
-              Atividades Recentes
-            </CardTitle>
-            <CardDescription>
-              Últimas movimentações da sua conta
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhuma atividade registrada ainda</p>
-              <p className="text-sm mt-2">
-                Comece enviando seus documentos ou lançando receitas
-              </p>
-            </div>
-          </CardContent>
-        </Card>
           </>
         )}
       </div>
