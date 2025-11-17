@@ -159,11 +159,13 @@ export function ClientRegistrationForm({ userId, onSuccess }: ClientRegistration
               <Label htmlFor="cnpj">CNPJ *</Label>
               <Input
                 id="cnpj"
-                {...register("cnpj")}
+                {...register("cnpj", {
+                  onChange: (e) => {
+                    e.target.value = formatCNPJ(e.target.value);
+                  }
+                })}
                 placeholder="00.000.000/0000-00"
-                onChange={(e) => {
-                  e.target.value = formatCNPJ(e.target.value);
-                }}
+                maxLength={18}
               />
               {errors.cnpj && (
                 <p className="text-sm text-destructive mt-1">{errors.cnpj.message}</p>
