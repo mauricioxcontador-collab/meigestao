@@ -10,6 +10,172 @@ import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
 import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
 
+interface Revenue {
+  id: string;
+  valor: number;
+  descricao: string;
+  categoria: string;
+  data: string;
+}
+
+interface Expense {
+  id: string;
+  valor: number;
+  descricao: string;
+  categoria: string;
+  data: string;
+}
+
+function RevenuesList({ clientId }: { clientId: string }) {
+  const [revenues, setRevenues] = useState<Revenue[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadRevenues();
+  }, [clientId]);
+
+  const loadRevenues = async () => {
+    const { data, error } = await supabase
+      .from("revenues")
+      .select("id, valor, descricao, categoria, data")
+      .eq("client_id", clientId)
+      .order("data", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Erro ao carregar receitas",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      setRevenues(data || []);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Receitas Cadastradas</CardTitle>
+        <CardDescription>Lista de todas as suas receitas</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {revenues.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
+        ) : (
+          <div className="space-y-4">
+            {revenues.map((revenue) => (
+              <Card key={revenue.id} className="border-border">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Valor</p>
+                      <p className="text-lg font-semibold text-success">{formatCurrency(revenue.valor)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Data</p>
+                      <p className="text-lg font-medium">{new Date(revenue.data).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Descrição</p>
+                      <p className="text-base">{revenue.descricao}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Categoria</p>
+                      <p className="text-base">{revenue.categoria}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ExpensesList({ clientId }: { clientId: string }) {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadExpenses();
+  }, [clientId]);
+
+  const loadExpenses = async () => {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("id, valor, descricao, categoria, data")
+      .eq("client_id", clientId)
+      .order("data", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Erro ao carregar despesas",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      setExpenses(data || []);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Despesas Cadastradas</CardTitle>
+        <CardDescription>Lista de todas as suas despesas</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {expenses.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">Nenhuma despesa cadastrada</p>
+        ) : (
+          <div className="space-y-4">
+            {expenses.map((expense) => (
+              <Card key={expense.id} className="border-border">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Valor</p>
+                      <p className="text-lg font-semibold text-destructive">{formatCurrency(expense.valor)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Data</p>
+                      <p className="text-lg font-medium">{new Date(expense.data).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Descrição</p>
+                      <p className="text-base">{expense.descricao}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Categoria</p>
+                      <p className="text-base">{expense.categoria}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 const DashboardMEI = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -292,55 +458,11 @@ const DashboardMEI = () => {
               </TabsContent>
 
               <TabsContent value="receitas">
-                {clientId && (
-                  <div className="space-y-6">
-                    <Card className="border-border">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5 text-success" />
-                          Total de Receitas
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-4xl font-bold text-success mb-2">
-                          {formatCurrency(annualRevenue)}
-                        </div>
-                        <p className="text-muted-foreground">
-                          Acumulado no ano de {new Date().getFullYear()}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <RevenuesManager clientId={clientId} onUpdate={() => {
-                      loadRevenues(clientId);
-                    }} />
-                  </div>
-                )}
+                {clientId && <RevenuesList clientId={clientId} />}
               </TabsContent>
 
               <TabsContent value="despesas">
-                {clientId && (
-                  <div className="space-y-6">
-                    <Card className="border-border">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <TrendingDown className="h-5 w-5 text-destructive" />
-                          Total de Despesas
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-4xl font-bold text-destructive mb-2">
-                          {formatCurrency(totalExpenses)}
-                        </div>
-                        <p className="text-muted-foreground">
-                          Acumulado no ano de {new Date().getFullYear()}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <ExpensesManager clientId={clientId} onUpdate={() => {
-                      loadExpenses(clientId);
-                    }} />
-                  </div>
-                )}
+                {clientId && <ExpensesList clientId={clientId} />}
               </TabsContent>
             </Tabs>
 
