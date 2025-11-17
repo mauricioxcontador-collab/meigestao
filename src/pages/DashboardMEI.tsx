@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOut, DollarSign, TrendingUp, AlertCircle, FileText, Upload, MessageCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogOut, DollarSign, TrendingUp, AlertCircle, FileText, Upload, MessageCircle, TrendingDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
 import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
@@ -17,6 +18,7 @@ const DashboardMEI = () => {
   const [clientActivity, setClientActivity] = useState<string>("");
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
   const [annualRevenue, setAnnualRevenue] = useState<number>(0);
+  const [totalExpenses, setTotalExpenses] = useState<number>(0);
   const [showClientForm, setShowClientForm] = useState(false);
 
   useEffect(() => {
@@ -39,6 +41,7 @@ const DashboardMEI = () => {
         setClientId(clientData.id);
         setClientActivity(clientData.atividade || "");
         loadRevenues(clientData.id);
+        loadExpenses(clientData.id);
       } else {
         setShowClientForm(true);
       }
@@ -89,6 +92,29 @@ const DashboardMEI = () => {
         })
         .reduce((sum, rev) => sum + Number(rev.valor), 0);
       setMonthlyRevenue(monthly);
+    }
+  };
+
+  const loadExpenses = async (clientId: string) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    // Get all expenses for the current year
+    const { data: expenses, error } = await supabase
+      .from("expenses")
+      .select("valor")
+      .eq("client_id", clientId)
+      .gte("data", `${currentYear}-01-01`)
+      .lte("data", `${currentYear}-12-31`);
+
+    if (error) {
+      console.error("Error loading expenses:", error);
+      return;
+    }
+
+    if (expenses) {
+      const total = expenses.reduce((sum, exp) => sum + Number(exp.valor), 0);
+      setTotalExpenses(total);
     }
   };
 
@@ -192,44 +218,131 @@ const DashboardMEI = () => {
           />
         ) : (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                Olá, {user?.user_metadata?.full_name || "MEI"}!
-              </h1>
-              <p className="text-muted-foreground">
-                Bem-vindo ao seu painel de controle
-              </p>
-            </div>
+            <Tabs defaultValue="dashboard" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="receitas">Receitas</TabsTrigger>
+                <TabsTrigger value="despesas">Despesas</TabsTrigger>
+              </TabsList>
 
-        {/* Metrics Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {metrics.map((metric, index) => (
-            <Card key={index} className="border-border hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {metric.title}
-                </CardTitle>
-                <metric.icon className={`h-5 w-5 ${metric.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">
-                  {metric.value}
+              <TabsContent value="dashboard" className="space-y-6">
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-foreground mb-2">
+                    Olá, {user?.user_metadata?.full_name || "MEI"}!
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Bem-vindo ao seu painel de controle
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {metric.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
-        {/* Financial Management */}
-        {clientId && (
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <RevenuesManager clientId={clientId} onUpdate={() => loadRevenues(clientId)} />
-            <ExpensesManager clientId={clientId} />
-          </div>
-        )}
+                {/* Metrics Grid */}
+                <div className="grid md:grid-cols-3 gap-6">
+                  {metrics.map((metric, index) => (
+                    <Card key={index} className="border-border hover:shadow-lg transition-shadow">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          {metric.title}
+                        </CardTitle>
+                        <metric.icon className={`h-5 w-5 ${metric.color}`} />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-foreground mb-1">
+                          {metric.value}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {metric.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid md:grid-cols-2 gap-6 mt-8">
+                  <Card className="border-border">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-base font-medium">Total de Receitas</CardTitle>
+                      <TrendingUp className="h-5 w-5 text-success" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-success">
+                        {formatCurrency(annualRevenue)}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Acumulado no ano
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-border">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-base font-medium">Total de Despesas</CardTitle>
+                      <TrendingDown className="h-5 w-5 text-destructive" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-destructive">
+                        {formatCurrency(totalExpenses)}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Acumulado no ano
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="receitas">
+                {clientId && (
+                  <div className="space-y-6">
+                    <Card className="border-border">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-success" />
+                          Total de Receitas
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-4xl font-bold text-success mb-2">
+                          {formatCurrency(annualRevenue)}
+                        </div>
+                        <p className="text-muted-foreground">
+                          Acumulado no ano de {new Date().getFullYear()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <RevenuesManager clientId={clientId} onUpdate={() => {
+                      loadRevenues(clientId);
+                    }} />
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="despesas">
+                {clientId && (
+                  <div className="space-y-6">
+                    <Card className="border-border">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingDown className="h-5 w-5 text-destructive" />
+                          Total de Despesas
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-4xl font-bold text-destructive mb-2">
+                          {formatCurrency(totalExpenses)}
+                        </div>
+                        <p className="text-muted-foreground">
+                          Acumulado no ano de {new Date().getFullYear()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <ExpensesManager clientId={clientId} onUpdate={() => {
+                      loadExpenses(clientId);
+                    }} />
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
