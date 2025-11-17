@@ -63,25 +63,25 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 26% 14%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
-    --card: 220 20% 18%;
+    --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 220 20% 18%;
+    --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 350 89% 60%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 22%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 220 20% 22%;
+    --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 350 89% 60%;
+    --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
 
     --success: 142 71% 45%;
@@ -93,26 +93,18 @@ All colors MUST be HSL.
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 20% 25%;
-    --input: 220 20% 22%;
-    --ring: 350 89% 60%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
 
-    --chart-1: 350 89% 60%;
-    --chart-2: 220 70% 50%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 142 71% 45%;
-
-    --gradient-revenue: linear-gradient(135deg, hsl(350 89% 60%), hsl(350 89% 70%));
-    --gradient-profit: linear-gradient(135deg, hsl(220 70% 50%), hsl(220 70% 60%));
-
-    --sidebar-background: 220 26% 14%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 350 89% 60%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 22%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 20% 25%;
-    --sidebar-ring: 350 89% 60%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -138,14 +130,6 @@ All colors MUST be HSL.
   
   .gradient-hero {
     background: var(--gradient-hero);
-  }
-
-  .gradient-revenue {
-    background: var(--gradient-revenue);
-  }
-
-  .gradient-profit {
-    background: var(--gradient-profit);
   }
 
   .shadow-glow {
