@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { LogOut, DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
@@ -33,7 +34,14 @@ function RevenuesList({ clientId }: { clientId: string }) {
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(revenues.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentRevenues = revenues.slice(startIndex, endIndex);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
@@ -216,8 +224,9 @@ function RevenuesList({ clientId }: { clientId: string }) {
         {revenues.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
         ) : (
-          <div className="space-y-4">
-            {revenues.map((revenue) => (
+          <>
+            <div className="space-y-4">
+              {currentRevenues.map((revenue) => (
               <Card key={revenue.id} className="border-border">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -251,8 +260,41 @@ function RevenuesList({ clientId }: { clientId: string }) {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <Pagination className="mt-6">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
@@ -263,7 +305,14 @@ function ExpensesList({ clientId }: { clientId: string }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
+
+  const ITEMS_PER_PAGE = 10;
+  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentExpenses = expenses.slice(startIndex, endIndex);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
@@ -446,8 +495,9 @@ function ExpensesList({ clientId }: { clientId: string }) {
         {expenses.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Nenhuma despesa cadastrada</p>
         ) : (
-          <div className="space-y-4">
-            {expenses.map((expense) => (
+          <>
+            <div className="space-y-4">
+              {currentExpenses.map((expense) => (
               <Card key={expense.id} className="border-border">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -481,8 +531,41 @@ function ExpensesList({ clientId }: { clientId: string }) {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <Pagination className="mt-6">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
