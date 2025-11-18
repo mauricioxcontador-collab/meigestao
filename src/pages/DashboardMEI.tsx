@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { LogOut, DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { LogOut, DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
 import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
@@ -34,6 +35,7 @@ function RevenuesList({ clientId }: { clientId: string }) {
   const [revenues, setRevenues] = useState<Revenue[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
@@ -144,6 +146,30 @@ function RevenuesList({ clientId }: { clientId: string }) {
     reset();
   };
 
+  const handleDelete = async () => {
+    if (!deletingId) return;
+
+    const { error } = await supabase
+      .from("revenues")
+      .delete()
+      .eq("id", deletingId);
+
+    if (error) {
+      toast({
+        title: "Erro ao deletar receita",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Receita deletada",
+        description: "Receita deletada com sucesso!",
+      });
+      setDeletingId(null);
+      loadRevenues();
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -249,13 +275,23 @@ function RevenuesList({ clientId }: { clientId: string }) {
                       </div>
                     </div>
                     {!isAdding && !editingId && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => startEdit(revenue)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => startEdit(revenue)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeletingId(revenue.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -297,6 +333,23 @@ function RevenuesList({ clientId }: { clientId: string }) {
           </>
         )}
       </CardContent>
+
+      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar esta receita? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
@@ -305,6 +358,7 @@ function ExpensesList({ clientId }: { clientId: string }) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
@@ -415,6 +469,30 @@ function ExpensesList({ clientId }: { clientId: string }) {
     reset();
   };
 
+  const handleDelete = async () => {
+    if (!deletingId) return;
+
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", deletingId);
+
+    if (error) {
+      toast({
+        title: "Erro ao deletar despesa",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Despesa deletada",
+        description: "Despesa deletada com sucesso!",
+      });
+      setDeletingId(null);
+      loadExpenses();
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -520,13 +598,23 @@ function ExpensesList({ clientId }: { clientId: string }) {
                       </div>
                     </div>
                     {!isAdding && !editingId && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => startEdit(expense)}
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => startEdit(expense)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeletingId(expense.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -568,6 +656,23 @@ function ExpensesList({ clientId }: { clientId: string }) {
           </>
         )}
       </CardContent>
+
+      <AlertDialog open={!!deletingId} onOpenChange={() => setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar esta despesa? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Deletar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
