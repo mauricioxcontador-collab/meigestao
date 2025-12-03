@@ -858,7 +858,7 @@ const DashboardMEI = () => {
       case "despesas":
         return client && <ExpensesList clientId={client.id} />;
       case "conta":
-        return <AccountInfo client={client} />;
+        return <AccountInfo client={client} onClientUpdate={setClient} />;
       default:
         return (
           <div className="space-y-6">
