@@ -14,6 +14,7 @@ import { AccountInfo } from "@/components/dashboard/AccountInfo";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useForm } from "react-hook-form";
+import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
 interface Revenue {
   id: string;
@@ -862,13 +863,16 @@ const DashboardMEI = () => {
       default:
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Olá, {user?.user_metadata?.full_name || "MEI"}!
-              </h1>
-              <p className="text-muted-foreground">
-                Bem-vindo ao seu painel de controle
-              </p>
+            <div className="flex items-center gap-4">
+              <img src={logoMeiGestao} alt="MEI Gestão" className="w-16 h-16 object-contain" />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">
+                  Olá, {user?.user_metadata?.full_name || "MEI"}!
+                </h1>
+                <p className="text-muted-foreground">
+                  Bem-vindo ao seu painel de controle
+                </p>
+              </div>
             </div>
 
             {/* Metrics Grid */}
