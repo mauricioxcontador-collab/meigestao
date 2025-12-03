@@ -1,26 +1,25 @@
 import { Home, DollarSign, TrendingDown, User, LogOut } from "lucide-react";
-import { NavLink } from "@/components/NavLink";
+import { useSearchParams } from "react-router-dom";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
   SidebarFooter,
+  SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Receitas", url: "/dashboard?tab=receitas", icon: DollarSign },
-  { title: "Despesas", url: "/dashboard?tab=despesas", icon: TrendingDown },
-  { title: "Conta", url: "/dashboard?tab=conta", icon: User },
+  { title: "Dashboard", tab: "dashboard", icon: Home },
+  { title: "Receitas", tab: "receitas", icon: DollarSign },
+  { title: "Despesas", tab: "despesas", icon: TrendingDown },
+  { title: "Conta do Cliente", tab: "conta", icon: User },
 ];
 
 interface AppSidebarProps {
@@ -31,54 +30,64 @@ interface AppSidebarProps {
 export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get("tab") || "dashboard";
+
+  const handleTabChange = (tab: string) => {
+    if (tab === "dashboard") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab });
+    }
+  };
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible="icon">
-      <SidebarContent>
-        <div className="p-4 border-b border-sidebar-border">
-          <SidebarTrigger />
-          {!collapsed && (
-            <div className="mt-4">
-              <h2 className="text-lg font-semibold text-sidebar-foreground">MEI Manager</h2>
-              <p className="text-xs text-sidebar-foreground/60 truncate">{userEmail}</p>
-            </div>
-          )}
-        </div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="border-b border-sidebar-border p-4">
+        {!collapsed && (
+          <div>
+            <h2 className="text-lg font-bold text-sidebar-foreground">MEI Gestão</h2>
+            <p className="text-xs text-sidebar-foreground/60 truncate mt-1">{userEmail}</p>
+          </div>
+        )}
+        {collapsed && (
+          <div className="w-8 h-8 rounded-lg bg-primary mx-auto" />
+        )}
+      </SidebarHeader>
 
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className="hover:bg-sidebar-accent"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
+              {menuItems.map((item) => {
+                const isActive = currentTab === item.tab;
+                return (
+                  <SidebarMenuItem key={item.tab}>
+                    <SidebarMenuButton
+                      onClick={() => handleTabChange(item.tab)}
+                      isActive={isActive}
+                      tooltip={item.title}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
-        <Button
-          variant="ghost"
-          size={collapsed ? "icon" : "default"}
+        <SidebarMenuButton
           onClick={onLogout}
-          className="w-full justify-start hover:bg-sidebar-accent"
-          title="Sair"
+          tooltip="Sair"
+          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Sair</span>}
-        </Button>
+          <span>Sair</span>
+        </SidebarMenuButton>
       </SidebarFooter>
     </Sidebar>
   );

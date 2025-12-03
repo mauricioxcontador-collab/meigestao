@@ -5,17 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, LogOut } from "lucide-react";
+import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ExpensesManager } from "@/components/dashboard/ExpensesManager";
-import { RevenuesManager } from "@/components/dashboard/RevenuesManager";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
 import { AccountInfo } from "@/components/dashboard/AccountInfo";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useForm } from "react-hook-form";
 
 interface Revenue {
@@ -680,16 +677,27 @@ function ExpensesList({ clientId }: { clientId: string }) {
   );
 }
 
+interface Client {
+  id: string;
+  razao_social: string;
+  cnpj: string;
+  atividade: string | null;
+  data_abertura: string | null;
+  limite_faturamento_anual: number | null;
+}
+
 const DashboardMEI = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [clientActivity, setClientActivity] = useState<string>("");
+  const [client, setClient] = useState<Client | null>(null);
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
   const [annualRevenue, setAnnualRevenue] = useState<number>(0);
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
   const [showClientForm, setShowClientForm] = useState(false);
+
+  const currentTab = searchParams.get("tab") || "dashboard";
 
   useEffect(() => {
     const checkUser = async () => {
@@ -700,16 +708,14 @@ const DashboardMEI = () => {
       }
       setUser(session.user);
 
-      // Load client data
       const { data: clientData } = await supabase
         .from("clients")
-        .select("id, atividade")
+        .select("id, razao_social, cnpj, atividade, data_abertura, limite_faturamento_anual")
         .eq("mei_user_id", session.user.id)
         .maybeSingle();
 
       if (clientData) {
-        setClientId(clientData.id);
-        setClientActivity(clientData.atividade || "");
+        setClient(clientData);
         loadRevenues(clientData.id);
         loadExpenses(clientData.id);
       } else {
@@ -735,7 +741,6 @@ const DashboardMEI = () => {
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
 
-    // Get all revenues for the current year
     const { data: revenues, error } = await supabase
       .from("revenues")
       .select("valor, data")
@@ -749,11 +754,9 @@ const DashboardMEI = () => {
     }
 
     if (revenues) {
-      // Calculate annual revenue
       const annual = revenues.reduce((sum, rev) => sum + Number(rev.valor), 0);
       setAnnualRevenue(annual);
 
-      // Calculate monthly revenue (current month)
       const monthly = revenues
         .filter((rev) => {
           const revenueDate = new Date(rev.data);
@@ -769,7 +772,6 @@ const DashboardMEI = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
 
-    // Get all expenses for the current year
     const { data: expenses, error } = await supabase
       .from("expenses")
       .select("valor")
@@ -806,173 +808,149 @@ const DashboardMEI = () => {
 
   const getDASValue = (activity: string): number => {
     const activityLower = activity.toLowerCase();
-    
-    // Comércio e Serviços (simultaneamente)
     if (activityLower.includes("comércio") && activityLower.includes("serviço")) {
       return 81.90;
     }
-    // Prestação de Serviços
     if (activityLower.includes("serviço")) {
       return 80.90;
     }
-    // Comércio ou Indústria (padrão)
     return 76.90;
   };
 
   const getDASDescription = (): string => {
     const now = new Date();
     const dueDate = new Date(now.getFullYear(), now.getMonth(), 20);
-    
     return `Vencimento: ${dueDate.toLocaleDateString('pt-BR')}`;
   };
 
   const percentageUsed = ((annualRevenue / 81000) * 100).toFixed(1);
 
-  const metrics = [
-    {
-      title: "Faturamento Mensal",
-      value: formatCurrency(monthlyRevenue),
-      description: "Mês atual",
-      icon: DollarSign,
-      color: "text-primary"
-    },
-    {
-      title: "Faturamento Anual",
-      value: formatCurrency(annualRevenue),
-      description: `${percentageUsed}% do limite (R$ 81.000,00)`,
-      icon: TrendingUp,
-      color: annualRevenue > 81000 ? "text-destructive" : "text-success"
-    },
-    {
-      title: "DAS do Mês",
-      value: formatCurrency(getDASValue(clientActivity)),
-      description: getDASDescription(),
-      icon: AlertCircle,
-      color: "text-warning"
-    }
-  ];
-
   if (!user) return null;
 
+  const renderContent = () => {
+    if (showClientForm) {
+      return (
+        <ClientRegistrationForm 
+          userId={user.id} 
+          onSuccess={(newClientId) => {
+            // Reload client data after registration
+            supabase
+              .from("clients")
+              .select("id, razao_social, cnpj, atividade, data_abertura, limite_faturamento_anual")
+              .eq("id", newClientId)
+              .single()
+              .then(({ data }) => {
+                if (data) {
+                  setClient(data);
+                  setShowClientForm(false);
+                  loadRevenues(data.id);
+                  loadExpenses(data.id);
+                }
+              });
+          }} 
+        />
+      );
+    }
+
+    switch (currentTab) {
+      case "receitas":
+        return client && <RevenuesList clientId={client.id} />;
+      case "despesas":
+        return client && <ExpensesList clientId={client.id} />;
+      case "conta":
+        return <AccountInfo client={client} />;
+      default:
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Olá, {user?.user_metadata?.full_name || "MEI"}!
+              </h1>
+              <p className="text-muted-foreground">
+                Bem-vindo ao seu painel de controle
+              </p>
+            </div>
+
+            {/* Metrics Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Faturamento Mensal
+                  </CardTitle>
+                  <DollarSign className="h-4 w-4 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(monthlyRevenue)}</div>
+                  <p className="text-xs text-muted-foreground">Mês atual</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Faturamento Anual
+                  </CardTitle>
+                  <TrendingUp className={`h-4 w-4 ${annualRevenue > 81000 ? "text-destructive" : "text-green-500"}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(annualRevenue)}</div>
+                  <p className="text-xs text-muted-foreground">{percentageUsed}% do limite (R$ 81.000,00)</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    DAS do Mês
+                  </CardTitle>
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(getDASValue(client?.atividade || ""))}</div>
+                  <p className="text-xs text-muted-foreground">{getDASDescription()}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-600">{formatCurrency(annualRevenue)}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Acumulado no ano</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total de Despesas</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-destructive" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-destructive">{formatCurrency(totalExpenses)}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Acumulado no ano</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-primary" />
-            <span className="text-xl font-bold text-foreground">MEI Gestão</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden md:block">
-              {user?.email}
-            </span>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        {showClientForm ? (
-          <ClientRegistrationForm 
-            userId={user.id} 
-            onSuccess={(newClientId) => {
-              setClientId(newClientId);
-              setShowClientForm(false);
-              loadRevenues(newClientId);
-            }} 
-          />
-        ) : (
-          <>
-            <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="receitas">Receitas</TabsTrigger>
-                <TabsTrigger value="despesas">Despesas</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="dashboard" className="space-y-6">
-                <div className="mb-8">
-                  <h1 className="text-3xl font-bold text-foreground mb-2">
-                    Olá, {user?.user_metadata?.full_name || "MEI"}!
-                  </h1>
-                  <p className="text-muted-foreground">
-                    Bem-vindo ao seu painel de controle
-                  </p>
-                </div>
-
-                {/* Metrics Grid */}
-                <div className="grid md:grid-cols-3 gap-6">
-                  {metrics.map((metric, index) => (
-                    <Card key={index} className="border-border hover:shadow-lg transition-shadow">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">
-                          {metric.title}
-                        </CardTitle>
-                        <metric.icon className={`h-5 w-5 ${metric.color}`} />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-foreground mb-1">
-                          {metric.value}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {metric.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Summary Cards */}
-                <div className="grid md:grid-cols-2 gap-6 mt-8">
-                  <Card className="border-border">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-base font-medium">Total de Receitas</CardTitle>
-                      <TrendingUp className="h-5 w-5 text-success" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-success">
-                        {formatCurrency(annualRevenue)}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Acumulado no ano
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-base font-medium">Total de Despesas</CardTitle>
-                      <TrendingDown className="h-5 w-5 text-destructive" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold text-destructive">
-                        {formatCurrency(totalExpenses)}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Acumulado no ano
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="receitas">
-                {clientId && <RevenuesList clientId={clientId} />}
-              </TabsContent>
-
-              <TabsContent value="despesas">
-                {clientId && <ExpensesList clientId={clientId} />}
-              </TabsContent>
-            </Tabs>
-          </>
-        )}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
+        <main className="flex-1 p-6 overflow-auto">
+          {renderContent()}
+        </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
