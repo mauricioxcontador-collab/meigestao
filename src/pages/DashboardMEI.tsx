@@ -862,82 +862,117 @@ const DashboardMEI = () => {
         return <AccountInfo client={client} onClientUpdate={setClient} />;
       default:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <img src={logoMeiGestao} alt="MEI Gestão" className="w-16 h-16 object-contain" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">
-                  Olá, {user?.user_metadata?.full_name || "MEI"}!
-                </h1>
-                <p className="text-muted-foreground">
-                  Bem-vindo ao seu painel de controle
-                </p>
+          <div className="space-y-8 animate-fade-in">
+            {/* Hero Header */}
+            <div className="relative overflow-hidden rounded-2xl gradient-hero p-8 text-primary-foreground">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/4" />
+              </div>
+              <div className="relative flex items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                  <img src={logoMeiGestao} alt="MEI Gestão" className="w-14 h-14 object-contain" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold">
+                    Olá, {user?.user_metadata?.full_name || "MEI"}!
+                  </h1>
+                  <p className="text-white/80 mt-1">
+                    Bem-vindo ao seu painel de controle financeiro
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card className="card-hover border-0 shadow-md overflow-hidden">
+                <div className="h-1 gradient-primary" />
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     Faturamento Mensal
                   </CardTitle>
-                  <DollarSign className="h-4 w-4 text-primary" />
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(monthlyRevenue)}</div>
-                  <p className="text-xs text-muted-foreground">Mês atual</p>
+                  <div className="text-3xl font-bold text-foreground">{formatCurrency(monthlyRevenue)}</div>
+                  <p className="text-sm text-muted-foreground mt-1">Mês atual</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-hover border-0 shadow-md overflow-hidden">
+                <div className={`h-1 ${annualRevenue > 81000 ? "bg-destructive" : "bg-accent"}`} />
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     Faturamento Anual
                   </CardTitle>
-                  <TrendingUp className={`h-4 w-4 ${annualRevenue > 81000 ? "text-destructive" : "text-green-500"}`} />
+                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${annualRevenue > 81000 ? "bg-destructive/10" : "bg-accent/10"}`}>
+                    <TrendingUp className={`h-5 w-5 ${annualRevenue > 81000 ? "text-destructive" : "text-accent"}`} />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(annualRevenue)}</div>
-                  <p className="text-xs text-muted-foreground">{percentageUsed}% do limite (R$ 81.000,00)</p>
+                  <div className="text-3xl font-bold text-foreground">{formatCurrency(annualRevenue)}</div>
+                  <div className="mt-3">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">Limite utilizado</span>
+                      <span className="font-semibold">{percentageUsed}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all ${annualRevenue > 81000 ? "bg-destructive" : "gradient-hero"}`}
+                        style={{ width: `${Math.min(parseFloat(percentageUsed), 100)}%` }}
+                      />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-hover border-0 shadow-md overflow-hidden">
+                <div className="h-1 bg-warning" />
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     DAS do Mês
                   </CardTitle>
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
+                    <AlertCircle className="h-5 w-5 text-warning" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(getDASValue(client?.atividade || ""))}</div>
-                  <p className="text-xs text-muted-foreground">{getDASDescription()}</p>
+                  <div className="text-3xl font-bold text-foreground">{formatCurrency(getDASValue(client?.atividade || ""))}</div>
+                  <p className="text-sm text-muted-foreground mt-1">{getDASDescription()}</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Card>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <Card className="card-hover border-0 shadow-md relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <CardTitle className="text-base font-semibold">Total de Receitas</CardTitle>
+                  <div className="h-12 w-12 rounded-2xl gradient-hero flex items-center justify-center shadow-glow">
+                    <TrendingUp className="h-6 w-6 text-primary-foreground" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-600">{formatCurrency(annualRevenue)}</div>
-                  <p className="text-sm text-muted-foreground mt-1">Acumulado no ano</p>
+                  <div className="text-4xl font-bold text-accent">{formatCurrency(annualRevenue)}</div>
+                  <p className="text-sm text-muted-foreground mt-2">Acumulado no ano</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="card-hover border-0 shadow-md relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Despesas</CardTitle>
-                  <TrendingDown className="h-4 w-4 text-destructive" />
+                  <CardTitle className="text-base font-semibold">Total de Despesas</CardTitle>
+                  <div className="h-12 w-12 rounded-2xl bg-destructive flex items-center justify-center shadow-md">
+                    <TrendingDown className="h-6 w-6 text-destructive-foreground" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-destructive">{formatCurrency(totalExpenses)}</div>
-                  <p className="text-sm text-muted-foreground mt-1">Acumulado no ano</p>
+                  <div className="text-4xl font-bold text-destructive">{formatCurrency(totalExpenses)}</div>
+                  <p className="text-sm text-muted-foreground mt-2">Acumulado no ano</p>
                 </CardContent>
               </Card>
             </div>
@@ -948,9 +983,9 @@ const DashboardMEI = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full">
         <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-8 overflow-auto bg-background">
           {renderContent()}
         </main>
       </div>

@@ -1,4 +1,4 @@
-import { Home, DollarSign, TrendingDown, User, LogOut } from "lucide-react";
+import { Home, DollarSign, TrendingDown, User, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
@@ -15,6 +15,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { title: "Dashboard", tab: "dashboard", icon: Home },
@@ -29,7 +30,7 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get("tab") || "dashboard";
@@ -43,28 +44,29 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border p-3">
-        <div className="flex items-center gap-2">
-          <img 
-            src={logoMeiGestao} 
-            alt="MEI Gestão" 
-            className={`${collapsed ? "w-8 h-8" : "w-10 h-10"} object-contain transition-all`}
-          />
+    <Sidebar collapsible="icon" className="border-r-0">
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <img 
+              src={logoMeiGestao} 
+              alt="MEI Gestão" 
+              className={`${collapsed ? "w-10 h-10" : "w-12 h-12"} object-contain transition-all duration-300`}
+            />
+          </div>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-bold text-sidebar-foreground">MEI Gestão</h2>
+            <div className="flex-1 min-w-0 animate-fade-in">
+              <h2 className="text-base font-bold text-sidebar-foreground">MEI Gestão</h2>
               <p className="text-xs text-sidebar-foreground/60 truncate">{userEmail}</p>
             </div>
           )}
         </div>
-        <SidebarTrigger className="mt-2" />
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {menuItems.map((item) => {
                 const isActive = currentTab === item.tab;
                 return (
@@ -73,9 +75,16 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                       onClick={() => handleTabChange(item.tab)}
                       isActive={isActive}
                       tooltip={item.title}
+                      className={`
+                        relative transition-all duration-200 rounded-xl h-12
+                        ${isActive 
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-glow" 
+                          : "hover:bg-sidebar-border text-sidebar-foreground/80 hover:text-sidebar-foreground"
+                        }
+                      `}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <item.icon className={`h-5 w-5 ${isActive ? "text-sidebar-primary-foreground" : ""}`} />
+                      <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -85,14 +94,23 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2">
+      <SidebarFooter className="p-3 border-t border-sidebar-border space-y-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          className="w-full justify-center text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-border"
+        >
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {!collapsed && <span className="ml-2">Recolher</span>}
+        </Button>
         <SidebarMenuButton
           onClick={onLogout}
           tooltip="Sair"
-          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl h-12"
         >
-          <LogOut className="h-4 w-4" />
-          <span>Sair</span>
+          <LogOut className="h-5 w-5" />
+          <span className="font-medium">Sair</span>
         </SidebarMenuButton>
       </SidebarFooter>
     </Sidebar>
