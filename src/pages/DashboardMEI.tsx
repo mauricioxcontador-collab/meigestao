@@ -7,12 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2 } from "lucide-react";
+import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
 import { AccountInfo } from "@/components/dashboard/AccountInfo";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { useForm } from "react-hook-form";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
@@ -862,117 +861,168 @@ const DashboardMEI = () => {
         return <AccountInfo client={client} onClientUpdate={setClient} />;
       default:
         return (
-          <div className="space-y-8 animate-fade-in">
+          <div className="space-y-8">
             {/* Hero Header */}
-            <div className="relative overflow-hidden rounded-2xl gradient-hero p-8 text-primary-foreground">
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/4" />
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-secondary to-primary p-8 lg:p-10">
+              <div className="absolute inset-0 opacity-30">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-60 h-60 bg-white/20 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl" />
               </div>
-              <div className="relative flex items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                  <img src={logoMeiGestao} alt="MEI Gestão" className="w-14 h-14 object-contain" />
+              <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl border border-white/30">
+                  <img src={logoMeiGestao} alt="MEI Gestão" className="w-14 h-14 lg:w-16 lg:h-16 object-contain" />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold">
+                <div className="flex-1">
+                  <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
                     Olá, {user?.user_metadata?.full_name || "MEI"}!
                   </h1>
-                  <p className="text-white/80 mt-1">
+                  <p className="text-white/80 text-lg">
                     Bem-vindo ao seu painel de controle financeiro
                   </p>
                 </div>
+                <div className="hidden lg:flex items-center gap-3 text-white/80">
+                  <Calendar className="w-5 h-5" />
+                  <span>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                </div>
               </div>
             </div>
 
-            {/* Metrics Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="card-hover border-0 shadow-md overflow-hidden">
-                <div className="h-1 gradient-primary" />
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Faturamento Mensal
-                  </CardTitle>
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-primary" />
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-card/80">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+                <CardContent className="p-6 relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <DollarSign className="h-6 w-6 text-primary" />
+                    </div>
+                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">Mensal</span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{formatCurrency(monthlyRevenue)}</div>
-                  <p className="text-sm text-muted-foreground mt-1">Mês atual</p>
+                  <p className="text-sm text-muted-foreground mb-1">Faturamento</p>
+                  <p className="text-2xl lg:text-3xl font-bold">{formatCurrency(monthlyRevenue)}</p>
                 </CardContent>
               </Card>
 
-              <Card className="card-hover border-0 shadow-md overflow-hidden">
-                <div className={`h-1 ${annualRevenue > 81000 ? "bg-destructive" : "bg-accent"}`} />
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Faturamento Anual
-                  </CardTitle>
-                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${annualRevenue > 81000 ? "bg-destructive/10" : "bg-accent/10"}`}>
-                    <TrendingUp className={`h-5 w-5 ${annualRevenue > 81000 ? "text-destructive" : "text-accent"}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{formatCurrency(annualRevenue)}</div>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-muted-foreground">Limite utilizado</span>
-                      <span className="font-semibold">{percentageUsed}%</span>
+              <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-card/80">
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent" />
+                <CardContent className="p-6 relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <TrendingUp className="h-6 w-6 text-accent" />
                     </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all ${annualRevenue > 81000 ? "bg-destructive" : "gradient-hero"}`}
-                        style={{ width: `${Math.min(parseFloat(percentageUsed), 100)}%` }}
-                      />
-                    </div>
+                    <span className="text-xs font-medium text-accent bg-accent/10 px-2 py-1 rounded-full">Anual</span>
                   </div>
+                  <p className="text-sm text-muted-foreground mb-1">Faturamento</p>
+                  <p className="text-2xl lg:text-3xl font-bold">{formatCurrency(annualRevenue)}</p>
                 </CardContent>
               </Card>
 
-              <Card className="card-hover border-0 shadow-md overflow-hidden">
-                <div className="h-1 bg-warning" />
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    DAS do Mês
-                  </CardTitle>
-                  <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                    <AlertCircle className="h-5 w-5 text-warning" />
+              <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-card/80">
+                <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 to-transparent" />
+                <CardContent className="p-6 relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <TrendingDown className="h-6 w-6 text-destructive" />
+                    </div>
+                    <span className="text-xs font-medium text-destructive bg-destructive/10 px-2 py-1 rounded-full">Despesas</span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{formatCurrency(getDASValue(client?.atividade || ""))}</div>
-                  <p className="text-sm text-muted-foreground mt-1">{getDASDescription()}</p>
+                  <p className="text-sm text-muted-foreground mb-1">Total no Ano</p>
+                  <p className="text-2xl lg:text-3xl font-bold">{formatCurrency(totalExpenses)}</p>
+                </CardContent>
+              </Card>
+
+              <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-card/80">
+                <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-transparent" />
+                <CardContent className="p-6 relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-warning/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <AlertCircle className="h-6 w-6 text-warning" />
+                    </div>
+                    <span className="text-xs font-medium text-warning bg-warning/10 px-2 py-1 rounded-full">DAS</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">{getDASDescription()}</p>
+                  <p className="text-2xl lg:text-3xl font-bold">{formatCurrency(getDASValue(client?.atividade || ""))}</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid sm:grid-cols-2 gap-6">
-              <Card className="card-hover border-0 shadow-md relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-base font-semibold">Total de Receitas</CardTitle>
-                  <div className="h-12 w-12 rounded-2xl gradient-hero flex items-center justify-center shadow-glow">
-                    <TrendingUp className="h-6 w-6 text-primary-foreground" />
+            {/* Limit Progress */}
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <div className="h-1 bg-gradient-to-r from-primary via-secondary to-accent" />
+              <CardContent className="p-6 lg:p-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                      <Wallet className="h-7 w-7 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Limite Anual MEI</h3>
+                      <p className="text-muted-foreground">Acompanhe seu faturamento em relação ao limite</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-bold">{percentageUsed}%</p>
+                    <p className="text-sm text-muted-foreground">utilizado</p>
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="h-4 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        parseFloat(percentageUsed) > 90 
+                          ? "bg-destructive" 
+                          : parseFloat(percentageUsed) > 70 
+                            ? "bg-warning" 
+                            : "bg-gradient-to-r from-primary to-secondary"
+                      }`}
+                      style={{ width: `${Math.min(parseFloat(percentageUsed), 100)}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-3 text-sm text-muted-foreground">
+                    <span>{formatCurrency(annualRevenue)}</span>
+                    <span>{formatCurrency(81000)}</span>
+                  </div>
+                </div>
+                {parseFloat(percentageUsed) > 80 && (
+                  <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/20 flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
+                    <p className="text-sm text-warning">Atenção! Você está próximo do limite anual de faturamento do MEI.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Financial Summary */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="border-0 shadow-lg relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-semibold">Receitas do Ano</CardTitle>
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center shadow-lg">
+                      <TrendingUp className="h-6 w-6 text-white" />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold text-accent">{formatCurrency(annualRevenue)}</div>
-                  <p className="text-sm text-muted-foreground mt-2">Acumulado no ano</p>
+                  <div className="text-4xl font-bold text-accent mb-2">{formatCurrency(annualRevenue)}</div>
+                  <p className="text-muted-foreground">Acumulado em {new Date().getFullYear()}</p>
                 </CardContent>
               </Card>
 
-              <Card className="card-hover border-0 shadow-md relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-base font-semibold">Total de Despesas</CardTitle>
-                  <div className="h-12 w-12 rounded-2xl bg-destructive flex items-center justify-center shadow-md">
-                    <TrendingDown className="h-6 w-6 text-destructive-foreground" />
+              <Card className="border-0 shadow-lg relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-destructive/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-semibold">Despesas do Ano</CardTitle>
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-destructive to-destructive/60 flex items-center justify-center shadow-lg">
+                      <TrendingDown className="h-6 w-6 text-white" />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold text-destructive">{formatCurrency(totalExpenses)}</div>
-                  <p className="text-sm text-muted-foreground mt-2">Acumulado no ano</p>
+                  <div className="text-4xl font-bold text-destructive mb-2">{formatCurrency(totalExpenses)}</div>
+                  <p className="text-muted-foreground">Acumulado em {new Date().getFullYear()}</p>
                 </CardContent>
               </Card>
             </div>
@@ -982,14 +1032,12 @@ const DashboardMEI = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
-        <main className="flex-1 p-8 overflow-auto bg-background">
-          {renderContent()}
-        </main>
-      </div>
-    </SidebarProvider>
+    <div className="min-h-screen flex w-full bg-background">
+      <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
+      <main className="flex-1 p-6 lg:p-8 overflow-auto lg:ml-0 pt-20 lg:pt-8">
+        {renderContent()}
+      </main>
+    </div>
   );
 };
 
