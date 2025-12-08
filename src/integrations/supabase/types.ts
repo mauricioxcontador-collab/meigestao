@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achieved_at: string
+          client_id: string
+          goal_type: string
+          id: string
+          month: number
+          points: number
+          type: string
+          year: number
+        }
+        Insert: {
+          achieved_at?: string
+          client_id: string
+          goal_type: string
+          id?: string
+          month: number
+          points?: number
+          type: string
+          year: number
+        }
+        Update: {
+          achieved_at?: string
+          client_id?: string
+          goal_type?: string
+          id?: string
+          month?: number
+          points?: number
+          type?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           atividade: string | null
@@ -102,6 +143,94 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "expenses_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_goals: {
+        Row: {
+          client_id: string
+          created_at: string
+          expense_reduction_goal: number
+          expense_reduction_type: string
+          id: string
+          month: number
+          profit_goal: number
+          revenue_goal: number
+          sales_count_goal: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expense_reduction_goal?: number
+          expense_reduction_type?: string
+          id?: string
+          month: number
+          profit_goal?: number
+          revenue_goal?: number
+          sales_count_goal?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expense_reduction_goal?: number
+          expense_reduction_type?: string
+          id?: string
+          month?: number
+          profit_goal?: number
+          revenue_goal?: number
+          sales_count_goal?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_goals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
