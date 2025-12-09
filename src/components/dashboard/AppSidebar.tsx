@@ -1,5 +1,5 @@
-import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ const menuItems = [
   { title: "Dashboard", tab: "dashboard", icon: Home },
   { title: "Receitas", tab: "receitas", icon: DollarSign },
   { title: "Despesas", tab: "despesas", icon: TrendingDown },
+  { title: "Metas", tab: "metas", icon: Target, isRoute: true },
   { title: "Minha Conta", tab: "conta", icon: User },
 ];
 
@@ -20,9 +21,14 @@ interface AppSidebarProps {
 export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const [expanded, setExpanded] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const currentTab = searchParams.get("tab") || "dashboard";
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: string, isRoute?: boolean) => {
+    if (isRoute) {
+      navigate(`/${tab}`);
+      return;
+    }
     if (tab === "dashboard") {
       setSearchParams({});
     } else {
@@ -96,11 +102,11 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => {
-            const isActive = currentTab === item.tab;
+            const isActive = item.isRoute ? false : currentTab === item.tab;
             return (
               <button
                 key={item.tab}
-                onClick={() => handleTabChange(item.tab)}
+                onClick={() => handleTabChange(item.tab, item.isRoute)}
                 className={cn(
                   "w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200",
                   "text-left group",
