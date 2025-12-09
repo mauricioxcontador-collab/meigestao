@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import DashboardMEI from "./pages/DashboardMEI";
 import DashboardContador from "./pages/DashboardContador";
 import Goals from "./pages/Goals";
+import PerformanceCharts from "./pages/PerformanceCharts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardMEI />} />
           <Route path="/contador" element={<DashboardContador />} />
           <Route path="/metas" element={<Goals />} />
+          <Route path="/graficos" element={<PerformanceCharts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
