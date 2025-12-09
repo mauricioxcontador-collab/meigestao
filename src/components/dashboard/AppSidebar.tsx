@@ -1,5 +1,5 @@
 import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target, BarChart2 } from "lucide-react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,16 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const [expanded, setExpanded] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const currentTab = searchParams.get("tab") || "dashboard";
+  const currentPath = location.pathname;
 
   const handleTabChange = (tab: string, isRoute?: boolean) => {
+    // Close sidebar on mobile after navigation
+    if (window.innerWidth < 1024) {
+      setExpanded(false);
+    }
+    
     if (isRoute) {
       navigate(`/${tab}`);
       return;
@@ -35,6 +42,13 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
     } else {
       setSearchParams({ tab });
     }
+  };
+
+  const isItemActive = (item: typeof menuItems[0]) => {
+    if (item.isRoute) {
+      return currentPath === `/${item.tab}`;
+    }
+    return currentPath === "/mei" && currentTab === item.tab;
   };
 
   return (
@@ -47,15 +61,17 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         />
       )}
 
-      {/* Mobile toggle button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setExpanded(!expanded)}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-card shadow-lg"
-      >
-        {expanded ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+      {/* Mobile toggle button - only show when sidebar is closed */}
+      {!expanded && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setExpanded(true)}
+          className="fixed top-4 left-4 z-50 lg:hidden bg-card shadow-lg"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      )}
 
       {/* Sidebar */}
       <aside
@@ -67,21 +83,32 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
       >
         {/* Header */}
         <div className="p-6 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-white/10 rounded-xl blur" />
-              <img 
-                src={logoMeiGestao} 
-                alt="MEI Gestão" 
-                className="relative h-12 w-12 object-contain"
-              />
-            </div>
-            {expanded && (
-              <div className="overflow-hidden">
-                <h2 className="font-bold text-sidebar-foreground text-lg">MEI Gestão</h2>
-                <p className="text-xs text-sidebar-foreground/50 truncate max-w-[160px]">{userEmail}</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-white/10 rounded-xl blur" />
+                <img 
+                  src={logoMeiGestao} 
+                  alt="MEI Gestão" 
+                  className="relative h-12 w-12 object-contain"
+                />
               </div>
-            )}
+              {expanded && (
+                <div className="overflow-hidden">
+                  <h2 className="font-bold text-sidebar-foreground text-lg">MEI Gestão</h2>
+                  <p className="text-xs text-sidebar-foreground/50 truncate max-w-[160px]">{userEmail}</p>
+                </div>
+              )}
+            </div>
+            {/* Mobile close button inside sidebar */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExpanded(false)}
+              className="lg:hidden text-sidebar-foreground/70 hover:text-sidebar-foreground"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
@@ -103,7 +130,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => {
-            const isActive = item.isRoute ? false : currentTab === item.tab;
+            const isActive = isItemActive(item);
             return (
               <button
                 key={item.tab}
