@@ -1,1 +1,4 @@
 project_id = "qwbierwmjdxtlwnncgdp"
+
+[functions.generate-goal-report]
+verify_jwt = false
