@@ -38,12 +38,12 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
       return;
     }
     
-    // If we're on a different route, navigate to /mei first
-    if (currentPath !== "/mei") {
+    // If we're on a different route, navigate to /dashboard first
+    if (currentPath !== "/dashboard") {
       if (tab === "dashboard") {
-        navigate("/mei");
+        navigate("/dashboard");
       } else {
-        navigate(`/mei?tab=${tab}`);
+        navigate(`/dashboard?tab=${tab}`);
       }
       return;
     }
@@ -59,7 +59,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
     if (item.isRoute) {
       return currentPath === `/${item.tab}`;
     }
-    return currentPath === "/mei" && currentTab === item.tab;
+    return currentPath === "/dashboard" && currentTab === item.tab;
   };
 
   return (
