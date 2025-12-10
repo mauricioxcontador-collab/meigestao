@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet } from "lucide-react";
+import { MonthlyGrowthChart } from "@/components/charts/MonthlyGrowthChart";
 import { useToast } from "@/hooks/use-toast";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
 import { AccountInfo } from "@/components/dashboard/AccountInfo";
@@ -1026,6 +1027,9 @@ const DashboardMEI = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Monthly Growth Chart */}
+            {client && <MonthlyGrowthChart clientId={client.id} />}
           </div>
         );
     }
