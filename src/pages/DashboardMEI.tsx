@@ -737,6 +737,41 @@ const DashboardMEI = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Real-time subscription for revenues and expenses
+  useEffect(() => {
+    if (!client?.id) return;
+
+    const channel = supabase
+      .channel("dashboard-financial-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "revenues",
+        },
+        () => {
+          loadRevenues(client.id);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "expenses",
+        },
+        () => {
+          loadExpenses(client.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [client?.id]);
+
   const loadRevenues = async (clientId: string) => {
     const now = new Date();
     const currentYear = now.getFullYear();
