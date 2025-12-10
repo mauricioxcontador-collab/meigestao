@@ -37,6 +37,17 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
       navigate(`/${tab}`);
       return;
     }
+    
+    // If we're on a different route, navigate to /mei first
+    if (currentPath !== "/mei") {
+      if (tab === "dashboard") {
+        navigate("/mei");
+      } else {
+        navigate(`/mei?tab=${tab}`);
+      }
+      return;
+    }
+    
     if (tab === "dashboard") {
       setSearchParams({});
     } else {
