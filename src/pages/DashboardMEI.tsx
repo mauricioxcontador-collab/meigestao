@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -252,8 +253,9 @@ function RevenuesList({ clientId }: { clientId: string }) {
           <p className="text-muted-foreground text-center py-8">Nenhuma receita cadastrada</p>
         ) : (
           <>
-            <div className="space-y-4">
-              {currentRevenues.map((revenue) => (
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="space-y-4">
+                {currentRevenues.map((revenue) => (
               <Card key={revenue.id} className="border-border">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -297,8 +299,9 @@ function RevenuesList({ clientId }: { clientId: string }) {
                   </div>
                 </CardContent>
               </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
             
             {totalPages > 1 && (
               <Pagination className="mt-6">
@@ -575,8 +578,9 @@ function ExpensesList({ clientId }: { clientId: string }) {
           <p className="text-muted-foreground text-center py-8">Nenhuma despesa cadastrada</p>
         ) : (
           <>
-            <div className="space-y-4">
-              {currentExpenses.map((expense) => (
+            <ScrollArea className="h-[500px] pr-4">
+              <div className="space-y-4">
+                {currentExpenses.map((expense) => (
               <Card key={expense.id} className="border-border">
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
@@ -620,8 +624,9 @@ function ExpensesList({ clientId }: { clientId: string }) {
                   </div>
                 </CardContent>
               </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
             
             {totalPages > 1 && (
               <Pagination className="mt-6">
