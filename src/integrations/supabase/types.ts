@@ -315,6 +315,59 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          client_id: string
+          created_at: string
+          expense_growth: number | null
+          id: string
+          period_end: string
+          period_start: string
+          profit: number
+          profit_margin: number
+          report_data: Json | null
+          revenue_growth: number | null
+          total_expenses: number
+          total_revenue: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          expense_growth?: number | null
+          id?: string
+          period_end: string
+          period_start: string
+          profit?: number
+          profit_margin?: number
+          report_data?: Json | null
+          revenue_growth?: number | null
+          total_expenses?: number
+          total_revenue?: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          expense_growth?: number | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          profit?: number
+          profit_margin?: number
+          report_data?: Json | null
+          revenue_growth?: number | null
+          total_expenses?: number
+          total_revenue?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revenues: {
         Row: {
           categoria: string | null
