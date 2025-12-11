@@ -7,8 +7,8 @@ import { MonthlyComparisonChart } from '@/components/charts/MonthlyComparisonCha
 import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
 import { ChartFilters } from '@/components/charts/ChartFilters';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
-import { BarChart2, Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { BarChart2 } from 'lucide-react';
+
 import { toast } from 'sonner';
 
 type FilterPeriod = 'current' | 'last' | 'custom';
@@ -17,7 +17,7 @@ const PerformanceCharts = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [clientId, setClientId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('current');
   const [customStartDate, setCustomStartDate] = useState<Date | undefined>();
   const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
@@ -94,33 +94,9 @@ const PerformanceCharts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Mobile menu button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-4 left-4 z-50 lg:hidden"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-      >
-        <Menu className="h-6 w-6" />
-      </Button>
-
+    <div className="min-h-screen bg-background flex w-full">
       {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 z-40 lg:relative lg:flex
-        transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <AppSidebar userEmail={user.email || ''} onLogout={handleLogout} />
-      </div>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <AppSidebar userEmail={user.email || ''} onLogout={handleLogout} />
 
       {/* Main content */}
       <main className="flex-1 p-4 lg:p-8 overflow-auto">
