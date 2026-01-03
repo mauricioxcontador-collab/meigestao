@@ -11,6 +11,7 @@ import DashboardContador from "./pages/DashboardContador";
 import Goals from "./pages/Goals";
 import PerformanceCharts from "./pages/PerformanceCharts";
 import Reports from "./pages/Reports";
+import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<DashboardMEI />} />
           <Route path="/contador" element={<DashboardContador />} />
+          <Route path="/aceitar-convite" element={<AcceptInvite />} />
           <Route path="/metas" element={<Goals />} />
           <Route path="/graficos" element={<PerformanceCharts />} />
           <Route path="/relatorios" element={<Reports />} />
