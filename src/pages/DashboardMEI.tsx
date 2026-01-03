@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
 import { AccountInfo } from "@/components/dashboard/AccountInfo";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
 import { useForm } from "react-hook-form";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
@@ -898,6 +899,8 @@ const DashboardMEI = () => {
         return client && <RevenuesList clientId={client.id} />;
       case "despesas":
         return client && <ExpensesList clientId={client.id} />;
+      case "contador-gestao":
+        return <ContadorInviteManager />;
       case "conta":
         return <AccountInfo client={client} onClientUpdate={setClient} />;
       default:

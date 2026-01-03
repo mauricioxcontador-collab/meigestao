@@ -109,6 +109,42 @@ export type Database = {
           },
         ]
       }
+      contador_invitations: {
+        Row: {
+          accepted_at: string | null
+          contador_email: string
+          created_at: string
+          expires_at: string
+          id: string
+          invite_token: string
+          mei_user_id: string
+          permissions: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          contador_email: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          mei_user_id: string
+          permissions?: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          contador_email?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          mei_user_id?: string
+          permissions?: string
+          status?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           categoria: string | null
