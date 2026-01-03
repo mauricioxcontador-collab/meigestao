@@ -272,11 +272,11 @@ export function ReportActions({ data, companyName, clientId }: ReportActionsProp
           profit_margin: data.profitMargin,
           revenue_growth: data.revenueVariation,
           expense_growth: data.expenseVariation,
-          report_data: {
+          report_data: JSON.parse(JSON.stringify({
             topProducts: data.topProducts,
             revenueByCategory: data.revenueByCategory,
             expensesByCategory: data.expensesByCategory,
-          },
+          })),
         }]);
       }
 
