@@ -4,11 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Users, AlertCircle, TrendingUp, FileText, DollarSign, TrendingDown, Loader2, Eye } from "lucide-react";
+import { LogOut, Users, AlertCircle, TrendingUp, FileText, DollarSign, TrendingDown, Loader2, Eye, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
+import ClientDetailModal from "@/components/contador/ClientDetailModal";
+import ClientFinancialSummary from "@/components/contador/ClientFinancialSummary";
+import RevenueExpenseChart from "@/components/contador/RevenueExpenseChart";
+import MonthlyEvolutionChart from "@/components/contador/MonthlyEvolutionChart";
 
 interface Client {
   id: string;
@@ -20,7 +24,11 @@ interface Client {
   totalRevenue?: number;
   totalExpenses?: number;
   pendingObligations?: number;
+  monthlyRevenue?: number;
+  monthlyExpenses?: number;
 }
+
+const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const DashboardContador = () => {
   const navigate = useNavigate();
@@ -28,10 +36,19 @@ const DashboardContador = () => {
   const [user, setUser] = useState<any>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [consolidatedData, setConsolidatedData] = useState<{
+    monthlyChart: { month: string; receita: number; despesa: number }[];
+    evolutionChart: { month: string; faturamento: number }[];
+  }>({ monthlyChart: [], evolutionChart: [] });
   const [stats, setStats] = useState({
     totalClients: 0,
     pendingAlerts: 0,
     totalRevenue: 0,
+    totalExpenses: 0,
+    monthlyRevenue: 0,
+    monthlyExpenses: 0,
   });
 
   useEffect(() => {
@@ -60,7 +77,6 @@ const DashboardContador = () => {
 
   const fetchClients = async (userId: string) => {
     try {
-      // Fetch clients where this user is the contador
       const { data: clientsData, error: clientsError } = await supabase
         .from("clients")
         .select("*")
@@ -68,51 +84,57 @@ const DashboardContador = () => {
 
       if (clientsError) throw clientsError;
 
-      // For each client, fetch their financial summary
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const startOfMonth = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(currentYear, currentMonth + 1, 0).toISOString().split('T')[0];
+
       const clientsWithStats = await Promise.all(
         (clientsData || []).map(async (client) => {
-          // Fetch revenues
-          const { data: revenues } = await supabase
-            .from("revenues")
-            .select("valor")
-            .eq("client_id", client.id);
+          const [revenuesAll, expensesAll, revenuesMonth, expensesMonth, obligations] = await Promise.all([
+            supabase.from("revenues").select("valor").eq("client_id", client.id),
+            supabase.from("expenses").select("valor").eq("client_id", client.id),
+            supabase.from("revenues").select("valor").eq("client_id", client.id).gte("data", startOfMonth).lte("data", endOfMonth),
+            supabase.from("expenses").select("valor").eq("client_id", client.id).gte("data", startOfMonth).lte("data", endOfMonth),
+            supabase.from("obligations").select("*").eq("client_id", client.id).eq("pago", false),
+          ]);
 
-          // Fetch expenses
-          const { data: expenses } = await supabase
-            .from("expenses")
-            .select("valor")
-            .eq("client_id", client.id);
-
-          // Fetch pending obligations
-          const { data: obligations } = await supabase
-            .from("obligations")
-            .select("*")
-            .eq("client_id", client.id)
-            .eq("pago", false);
-
-          const totalRevenue = revenues?.reduce((sum, r) => sum + Number(r.valor), 0) || 0;
-          const totalExpenses = expenses?.reduce((sum, e) => sum + Number(e.valor), 0) || 0;
+          const totalRevenue = revenuesAll.data?.reduce((sum, r) => sum + Number(r.valor), 0) || 0;
+          const totalExpenses = expensesAll.data?.reduce((sum, e) => sum + Number(e.valor), 0) || 0;
+          const monthlyRevenue = revenuesMonth.data?.reduce((sum, r) => sum + Number(r.valor), 0) || 0;
+          const monthlyExpenses = expensesMonth.data?.reduce((sum, e) => sum + Number(e.valor), 0) || 0;
 
           return {
             ...client,
             totalRevenue,
             totalExpenses,
-            pendingObligations: obligations?.length || 0,
+            monthlyRevenue,
+            monthlyExpenses,
+            pendingObligations: obligations.data?.length || 0,
           };
         })
       );
 
       setClients(clientsWithStats);
 
-      // Calculate overall stats
       const totalRevenue = clientsWithStats.reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
+      const totalExpenses = clientsWithStats.reduce((sum, c) => sum + (c.totalExpenses || 0), 0);
+      const monthlyRevenue = clientsWithStats.reduce((sum, c) => sum + (c.monthlyRevenue || 0), 0);
+      const monthlyExpenses = clientsWithStats.reduce((sum, c) => sum + (c.monthlyExpenses || 0), 0);
       const pendingAlerts = clientsWithStats.reduce((sum, c) => sum + (c.pendingObligations || 0), 0);
 
       setStats({
         totalClients: clientsWithStats.length,
         pendingAlerts,
         totalRevenue,
+        totalExpenses,
+        monthlyRevenue,
+        monthlyExpenses,
       });
+
+      // Fetch consolidated charts data
+      await fetchConsolidatedCharts(clientsData || []);
     } catch (error: any) {
       console.error("Error fetching clients:", error);
       toast({
@@ -123,6 +145,70 @@ const DashboardContador = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchConsolidatedCharts = async (clientsList: { id: string }[]) => {
+    if (clientsList.length === 0) return;
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const twelveMonthsAgo = new Date(currentYear, currentMonth - 11, 1);
+    const startDate = twelveMonthsAgo.toISOString().split('T')[0];
+
+    const clientIds = clientsList.map(c => c.id);
+
+    const [revenuesRes, expensesRes] = await Promise.all([
+      supabase.from('revenues').select('valor, data, client_id').in('client_id', clientIds).gte('data', startDate),
+      supabase.from('expenses').select('valor, data, client_id').in('client_id', clientIds).gte('data', startDate),
+    ]);
+
+    const monthlyMap = new Map<string, { receita: number; despesa: number }>();
+    
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(currentYear, currentMonth - 11 + i, 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyMap.set(key, { receita: 0, despesa: 0 });
+    }
+
+    revenuesRes.data?.forEach(r => {
+      const date = new Date(r.data);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (monthlyMap.has(key)) {
+        const current = monthlyMap.get(key)!;
+        current.receita += Number(r.valor);
+      }
+    });
+
+    expensesRes.data?.forEach(e => {
+      const date = new Date(e.data);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (monthlyMap.has(key)) {
+        const current = monthlyMap.get(key)!;
+        current.despesa += Number(e.valor);
+      }
+    });
+
+    const sortedEntries = Array.from(monthlyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    
+    const monthlyChart = sortedEntries.map(([key, val]) => {
+      const [, month] = key.split('-');
+      return {
+        month: MONTH_LABELS[parseInt(month) - 1],
+        receita: val.receita,
+        despesa: val.despesa,
+      };
+    });
+
+    const evolutionChart = sortedEntries.map(([key, val]) => {
+      const [, month] = key.split('-');
+      return {
+        month: MONTH_LABELS[parseInt(month) - 1],
+        faturamento: val.receita,
+      };
+    });
+
+    setConsolidatedData({ monthlyChart, evolutionChart });
   };
 
   const handleLogout = async () => {
@@ -201,6 +287,34 @@ const DashboardContador = () => {
             Gerencie seus clientes e acompanhe todas as obrigações
           </p>
         </div>
+
+        {/* Monthly Financial Summary */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-primary" />
+            Resumo Financeiro Mensal (Consolidado)
+          </h2>
+          <ClientFinancialSummary
+            totalRevenue={stats.monthlyRevenue}
+            totalExpenses={stats.monthlyExpenses}
+            profit={stats.monthlyRevenue - stats.monthlyExpenses}
+            clientName="Todos os clientes - Mês atual"
+          />
+        </div>
+
+        {/* Charts Section */}
+        {!loading && clients.length > 0 && (
+          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+            <RevenueExpenseChart 
+              data={consolidatedData.monthlyChart} 
+              title="Receita x Despesa (Consolidado)"
+            />
+            <MonthlyEvolutionChart 
+              data={consolidatedData.evolutionChart}
+              title="Evolução do Faturamento (12 meses)"
+            />
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -290,7 +404,14 @@ const DashboardContador = () => {
                           <p className="font-semibold text-destructive">{formatCurrency(client.totalExpenses || 0)}</p>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedClient(client);
+                          setModalOpen(true);
+                        }}
+                      >
                         <Eye className="w-4 h-4 mr-2" />
                         Ver Detalhes
                       </Button>
@@ -336,6 +457,13 @@ const DashboardContador = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Client Detail Modal */}
+      <ClientDetailModal
+        client={selectedClient}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 };
