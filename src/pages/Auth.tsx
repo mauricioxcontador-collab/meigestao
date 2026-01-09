@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Building2, Calculator } from "lucide-react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
 const Auth = () => {
@@ -15,6 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [accountType, setAccountType] = useState<"mei" | "contador">("mei");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -23,7 +25,7 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -36,6 +38,20 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Insert role into user_roles table
+      if (data.user) {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert({
+            user_id: data.user.id,
+            role: accountType
+          });
+
+        if (roleError) {
+          console.error("Error setting user role:", roleError);
+        }
+      }
+
       toast({
         title: "Conta criada!",
         description: "Faça login para acessar o sistema",
@@ -44,6 +60,7 @@ const Auth = () => {
       setEmail("");
       setPassword("");
       setName("");
+      setAccountType("mei");
     } catch (error: any) {
       toast({
         title: "Erro ao criar conta",
@@ -186,6 +203,46 @@ const Auth = () => {
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-5">
+                    <div className="space-y-3">
+                      <Label className="text-base">Tipo de Conta</Label>
+                      <RadioGroup
+                        value={accountType}
+                        onValueChange={(value) => setAccountType(value as "mei" | "contador")}
+                        className="grid grid-cols-2 gap-4"
+                        disabled={isLoading}
+                      >
+                        <div>
+                          <RadioGroupItem
+                            value="mei"
+                            id="mei"
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor="mei"
+                            className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                          >
+                            <Building2 className="mb-2 h-6 w-6" />
+                            <span className="font-semibold">Empresa</span>
+                            <span className="text-xs text-muted-foreground">MEI / Empresa</span>
+                          </Label>
+                        </div>
+                        <div>
+                          <RadioGroupItem
+                            value="contador"
+                            id="contador"
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor="contador"
+                            className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer transition-all"
+                          >
+                            <Calculator className="mb-2 h-6 w-6" />
+                            <span className="font-semibold">Contador</span>
+                            <span className="text-xs text-muted-foreground">Profissional contábil</span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-name" className="text-base">Nome Completo</Label>
                       <Input
