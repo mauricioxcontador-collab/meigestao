@@ -10,6 +10,7 @@ import { ReportActions } from '@/components/reports/ReportActions';
 import { ReportHistory } from '@/components/reports/ReportHistory';
 import { useReportData, type FilterPeriod } from '@/hooks/useReportData';
 import { FileText } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
 
 const Reports = () => {
@@ -26,6 +27,15 @@ const Reports = () => {
     customStartDate,
     customEndDate
   );
+
+  const { isContador, isLoading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    if (!roleLoading && isContador) {
+      navigate('/contador');
+      return;
+    }
+  }, [roleLoading, isContador, navigate]);
 
   useEffect(() => {
     const getUser = async () => {

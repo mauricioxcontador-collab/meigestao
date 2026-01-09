@@ -8,7 +8,7 @@ import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
 import { ChartFilters } from '@/components/charts/ChartFilters';
 import { usePerformanceData } from '@/hooks/usePerformanceData';
 import { BarChart2 } from 'lucide-react';
-
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
 
 type FilterPeriod = 'current' | 'last' | 'custom';
@@ -32,6 +32,15 @@ const PerformanceCharts = () => {
     currentGoal,
     isLoading
   } = usePerformanceData(clientId, filterPeriod, customStartDate, customEndDate);
+
+  const { isContador, isLoading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    if (!roleLoading && isContador) {
+      navigate('/contador');
+      return;
+    }
+  }, [roleLoading, isContador, navigate]);
 
   useEffect(() => {
     const getUser = async () => {

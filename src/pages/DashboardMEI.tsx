@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet } from "lucide-react";
+import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet, Loader2 } from "lucide-react";
 import { MonthlyGrowthChart } from "@/components/charts/MonthlyGrowthChart";
 import { useToast } from "@/hooks/use-toast";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
@@ -16,6 +16,7 @@ import { AccountInfo } from "@/components/dashboard/AccountInfo";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
 import { useForm } from "react-hook-form";
+import { useUserRole } from "@/hooks/useUserRole";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
 interface Revenue {
@@ -705,6 +706,16 @@ const DashboardMEI = () => {
   const [showClientForm, setShowClientForm] = useState(false);
 
   const currentTab = searchParams.get("tab") || "dashboard";
+
+  const { isContador, isLoading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    // Redirect contador users to their dashboard
+    if (!roleLoading && isContador) {
+      navigate("/contador");
+      return;
+    }
+  }, [roleLoading, isContador, navigate]);
 
   useEffect(() => {
     const checkUser = async () => {
