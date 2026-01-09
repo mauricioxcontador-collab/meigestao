@@ -77,14 +77,27 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      navigate("/dashboard");
+      // Check user role to redirect appropriately
+      if (data.user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .single();
+
+        if (roleData?.role === "contador") {
+          navigate("/contador");
+        } else {
+          navigate("/dashboard");
+        }
+      }
     } catch (error: any) {
       toast({
         title: "Erro ao fazer login",

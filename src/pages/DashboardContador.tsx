@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Users, AlertCircle, TrendingUp, FileText, DollarSign, TrendingDown, Loader2, Eye, BarChart3 } from "lucide-react";
+import { Users, AlertCircle, TrendingUp, FileText, DollarSign, TrendingDown, Loader2, Eye, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 import ClientDetailModal from "@/components/contador/ClientDetailModal";
 import ClientFinancialSummary from "@/components/contador/ClientFinancialSummary";
 import RevenueExpenseChart from "@/components/contador/RevenueExpenseChart";
 import MonthlyEvolutionChart from "@/components/contador/MonthlyEvolutionChart";
+import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
 
 interface Client {
   id: string;
@@ -32,6 +33,8 @@ const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'S
 
 const DashboardContador = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const currentTab = searchParams.get("tab") || "dashboard";
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [clients, setClients] = useState<Client[]>([]);
@@ -254,39 +257,43 @@ const DashboardContador = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logoMeiGestao} alt="MEI Gestão" className="h-10 w-10" />
-            <div>
-              <span className="text-xl font-bold text-foreground block">MEI Gestão</span>
-              <span className="text-xs text-muted-foreground">Painel do Contador</span>
+    <div className="min-h-screen bg-muted/30 flex">
+      <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
+      
+      <main className="flex-1 min-h-screen overflow-auto">
+        {currentTab === "contador-gestao" ? (
+          <div className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Meus Clientes
+              </h1>
+              <p className="text-muted-foreground">
+                Gerencie seus convites e veja os clientes que você atende
+              </p>
+            </div>
+            <ContadorInviteManager />
+          </div>
+        ) : currentTab === "conta" ? (
+          <div className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Minha Conta
+              </h1>
+              <p className="text-muted-foreground">
+                {user?.email}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden md:block">
-              {user?.email}
-            </span>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Bem-vindo, Contador!
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie seus clientes e acompanhe todas as obrigações
-          </p>
-        </div>
+        ) : (
+          <div className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Bem-vindo, Contador!
+              </h1>
+              <p className="text-muted-foreground">
+                Gerencie seus clientes e acompanhe todas as obrigações
+              </p>
+            </div>
 
         {/* Monthly Financial Summary */}
         <div className="mb-8">
@@ -456,14 +463,16 @@ const DashboardContador = () => {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Client Detail Modal */}
-      <ClientDetailModal
-        client={selectedClient}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-      />
+        {/* Client Detail Modal */}
+        <ClientDetailModal
+          client={selectedClient}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
+          </div>
+        )}
+      </main>
     </div>
   );
 };
