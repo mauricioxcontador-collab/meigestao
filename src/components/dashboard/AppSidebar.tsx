@@ -1,11 +1,12 @@
 import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target, BarChart2, FileText, Users } from "lucide-react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useUserRole } from "@/hooks/useUserRole";
 
-const menuItems = [
+const meiMenuItems = [
   { title: "Dashboard", tab: "dashboard", icon: Home },
   { title: "Receitas", tab: "receitas", icon: DollarSign },
   { title: "Despesas", tab: "despesas", icon: TrendingDown },
@@ -13,6 +14,12 @@ const menuItems = [
   { title: "Gráficos", tab: "graficos", icon: BarChart2, isRoute: true },
   { title: "Relatórios", tab: "relatorios", icon: FileText, isRoute: true },
   { title: "Meu Contador", tab: "contador-gestao", icon: Users },
+  { title: "Minha Conta", tab: "conta", icon: User },
+];
+
+const contadorMenuItems = [
+  { title: "Dashboard", tab: "contador", icon: Home, isRoute: true },
+  { title: "Meus Clientes", tab: "contador-gestao", icon: Users },
   { title: "Minha Conta", tab: "conta", icon: User },
 ];
 
@@ -26,9 +33,13 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isContador, isLoading: roleLoading } = useUserRole();
   const currentTab = searchParams.get("tab") || "dashboard";
   const currentPath = location.pathname;
 
+  const menuItems = useMemo(() => {
+    return isContador ? contadorMenuItems : meiMenuItems;
+  }, [isContador]);
   const handleTabChange = (tab: string, isRoute?: boolean) => {
     // Close sidebar on mobile after navigation
     if (window.innerWidth < 1024) {
