@@ -14,6 +14,7 @@ import RevenueExpenseChart from "@/components/contador/RevenueExpenseChart";
 import MonthlyEvolutionChart from "@/components/contador/MonthlyEvolutionChart";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface Client {
   id: string;
@@ -53,6 +54,16 @@ const DashboardContador = () => {
     monthlyRevenue: 0,
     monthlyExpenses: 0,
   });
+
+  const { isMei, isLoading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    // Redirect MEI users to their dashboard
+    if (!roleLoading && isMei) {
+      navigate("/dashboard");
+      return;
+    }
+  }, [roleLoading, isMei, navigate]);
 
   useEffect(() => {
     const checkUser = async () => {

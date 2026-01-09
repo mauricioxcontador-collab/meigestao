@@ -14,6 +14,7 @@ import { AppSidebar } from '@/components/dashboard/AppSidebar';
 import { Target, BarChart3, Trophy, History, Sparkles, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useUserRole } from '@/hooks/useUserRole';
 import logoMeiGestao from '@/assets/logo-mei-gestao.png';
 
 const monthNames = [
@@ -41,6 +42,15 @@ const Goals = () => {
     currentMonth,
     currentYear
   } = useGoals(clientId);
+
+  const { isContador, isLoading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    if (!roleLoading && isContador) {
+      navigate('/contador');
+      return;
+    }
+  }, [roleLoading, isContador, navigate]);
 
   useEffect(() => {
     const checkAuth = async () => {
