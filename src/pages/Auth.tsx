@@ -38,14 +38,14 @@ const Auth = () => {
 
       if (error) throw error;
 
-      // Insert role into user_roles table
+      // Insert or update role into user_roles table
       if (data.user) {
         const { error: roleError } = await supabase
           .from("user_roles")
-          .insert({
+          .upsert({
             user_id: data.user.id,
             role: accountType
-          });
+          }, { onConflict: 'user_id' });
 
         if (roleError) {
           console.error("Error setting user role:", roleError);
