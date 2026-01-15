@@ -15,6 +15,7 @@ import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistratio
 import { AccountInfo } from "@/components/dashboard/AccountInfo";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
+import { ReceivedInvitesManager } from "@/components/mei/ReceivedInvitesManager";
 import { useForm } from "react-hook-form";
 import { useUserRole } from "@/hooks/useUserRole";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
@@ -911,7 +912,23 @@ const DashboardMEI = () => {
       case "despesas":
         return client && <ExpensesList clientId={client.id} />;
       case "contador-gestao":
-        return <ContadorInviteManager />;
+        return (
+          <div className="space-y-6">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Meu Contador
+              </h1>
+              <p className="text-muted-foreground">
+                Gerencie convites de contadores e controle quem tem acesso aos seus dados
+              </p>
+            </div>
+            <ReceivedInvitesManager />
+            <div className="border-t pt-6">
+              <h2 className="text-xl font-semibold mb-4">Convidar um Contador</h2>
+              <ContadorInviteManager />
+            </div>
+          </div>
+        );
       case "conta":
         return <AccountInfo client={client} onClientUpdate={setClient} />;
       default:
