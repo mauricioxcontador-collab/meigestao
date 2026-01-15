@@ -14,6 +14,7 @@ import RevenueExpenseChart from "@/components/contador/RevenueExpenseChart";
 import MonthlyEvolutionChart from "@/components/contador/MonthlyEvolutionChart";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
+import { AddClientForm } from "@/components/contador/AddClientForm";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface Client {
@@ -359,13 +360,23 @@ const DashboardContador = () => {
         {/* Clients List */}
         <Card className="border-border mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              Clientes MEI
-            </CardTitle>
-            <CardDescription>
-              Lista de todos os microempreendedores cadastrados
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  Clientes MEI
+                </CardTitle>
+                <CardDescription>
+                  Lista de todos os microempreendedores cadastrados
+                </CardDescription>
+              </div>
+              {user && (
+                <AddClientForm 
+                  contadorUserId={user.id} 
+                  onSuccess={() => fetchClients(user.id)}
+                />
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
