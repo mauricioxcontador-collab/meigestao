@@ -15,6 +15,7 @@ import MonthlyEvolutionChart from "@/components/contador/MonthlyEvolutionChart";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { ContadorInviteManager } from "@/components/contador/ContadorInviteManager";
 import { AddClientForm } from "@/components/contador/AddClientForm";
+import { InviteExistingClient } from "@/components/contador/InviteExistingClient";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface Client {
@@ -371,10 +372,16 @@ const DashboardContador = () => {
                 </CardDescription>
               </div>
               {user && (
-                <AddClientForm 
-                  contadorUserId={user.id} 
-                  onSuccess={() => fetchClients(user.id)}
-                />
+                <div className="flex flex-wrap gap-2">
+                  <InviteExistingClient 
+                    contadorUserId={user.id} 
+                    onSuccess={() => fetchClients(user.id)}
+                  />
+                  <AddClientForm 
+                    contadorUserId={user.id} 
+                    onSuccess={() => fetchClients(user.id)}
+                  />
+                </div>
               )}
             </div>
           </CardHeader>
