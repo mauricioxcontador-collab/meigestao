@@ -46,7 +46,7 @@ export function InviteExistingClient({ contadorUserId, onSuccess }: InviteExisti
     if (!searchTerm.trim()) {
       toast({
         title: "Campo obrigatório",
-        description: "Digite um email ou CNPJ para buscar",
+        description: "Digite um CNPJ, nome ou razão social para buscar",
         variant: "destructive",
       });
       return;
@@ -58,21 +58,7 @@ export function InviteExistingClient({ contadorUserId, onSuccess }: InviteExisti
 
     try {
       const cleanedSearch = searchTerm.replace(/\D/g, "");
-      const isSearchingCNPJ = cleanedSearch.length >= 11;
-
-      // First, search in profiles by email (via auth users) or cpf_cnpj
-      let profilesQuery = supabase
-        .from("profiles")
-        .select("id, full_name, cpf_cnpj");
-
-      // Search by CPF/CNPJ in profiles
-      if (isSearchingCNPJ) {
-        profilesQuery = profilesQuery.ilike("cpf_cnpj", `%${cleanedSearch}%`);
-      }
-
-      const { data: profilesData, error: profilesError } = await profilesQuery.limit(10);
-      
-      if (profilesError) throw profilesError;
+      const isSearchingCNPJ = cleanedSearch.length >= 8;
 
       // Get user_roles to filter only MEI users
       const { data: meiRoles, error: rolesError } = await supabase
@@ -84,120 +70,120 @@ export function InviteExistingClient({ contadorUserId, onSuccess }: InviteExisti
 
       const meiUserIds = new Set(meiRoles?.map(r => r.user_id) || []);
 
-      // Filter profiles to only include MEI users
-      const meiProfiles = (profilesData || []).filter(p => meiUserIds.has(p.id));
-
-      // Now get client data for these profiles
-      const profilesWithClients = await Promise.all(
-        meiProfiles.map(async (profile) => {
-          const { data: clientData } = await supabase
-            .from("clients")
-            .select("id, razao_social, cnpj, atividade")
-            .eq("mei_user_id", profile.id)
-            .maybeSingle();
-
-          return {
-            ...profile,
-            client: clientData,
-          };
-        })
-      );
-
-      // Also search clients directly by CNPJ if searching by number
-      if (isSearchingCNPJ) {
-        const { data: clientsData, error: clientsError } = await supabase
-          .from("clients")
-          .select("id, mei_user_id, razao_social, cnpj, atividade")
-          .ilike("cnpj", `%${cleanedSearch}%`)
-          .limit(10);
-
-        if (!clientsError && clientsData) {
-          // Add clients that weren't found via profiles
-          const existingMeiIds = new Set(profilesWithClients.map(p => p.id));
-          
-          for (const client of clientsData) {
-            if (!existingMeiIds.has(client.mei_user_id) && meiUserIds.has(client.mei_user_id)) {
-              const { data: profileData } = await supabase
-                .from("profiles")
-                .select("id, full_name, cpf_cnpj")
-                .eq("id", client.mei_user_id)
-                .maybeSingle();
-
-              if (profileData) {
-                profilesWithClients.push({
-                  ...profileData,
-                  client: {
-                    id: client.id,
-                    razao_social: client.razao_social,
-                    cnpj: client.cnpj,
-                    atividade: client.atividade,
-                  },
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // If searching by email, we need to use a different approach
-      // Since we can't directly query auth.users, we'll search by the term as potential name match too
-      if (!isSearchingCNPJ && searchTerm.includes("@")) {
-        // For email searches, we'd need an edge function to look up by email
-        // For now, we'll show a message that email search requires the client to be registered
-        toast({
-          title: "Busca por email",
-          description: "Para buscar por email, o cliente precisa ter um CNPJ cadastrado. Tente buscar pelo CNPJ.",
-        });
-      }
-
-      // Also search by name (razao_social)
-      if (!isSearchingCNPJ && !searchTerm.includes("@")) {
-        const { data: clientsByName, error: nameError } = await supabase
-          .from("clients")
-          .select("id, mei_user_id, razao_social, cnpj, atividade")
-          .ilike("razao_social", `%${searchTerm}%`)
-          .limit(10);
-
-        if (!nameError && clientsByName) {
-          const existingMeiIds = new Set(profilesWithClients.map(p => p.id));
-          
-          for (const client of clientsByName) {
-            if (!existingMeiIds.has(client.mei_user_id) && meiUserIds.has(client.mei_user_id)) {
-              const { data: profileData } = await supabase
-                .from("profiles")
-                .select("id, full_name, cpf_cnpj")
-                .eq("id", client.mei_user_id)
-                .maybeSingle();
-
-              if (profileData) {
-                profilesWithClients.push({
-                  ...profileData,
-                  client: {
-                    id: client.id,
-                    razao_social: client.razao_social,
-                    cnpj: client.cnpj,
-                    atividade: client.atividade,
-                  },
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // Filter out clients that are already managed by this contador
+      // Get clients already managed by this contador
       const { data: existingClients } = await supabase
         .from("clients")
         .select("mei_user_id")
         .eq("contador_user_id", contadorUserId);
 
       const existingMeiUserIds = new Set(existingClients?.map(c => c.mei_user_id) || []);
-      
-      const filteredResults = profilesWithClients.filter(p => !existingMeiUserIds.has(p.id));
 
-      setResults(filteredResults);
+      const profilesWithClients: MEIProfile[] = [];
 
-      if (filteredResults.length === 0) {
+      // Search by CNPJ in clients table
+      if (isSearchingCNPJ) {
+        const { data: clientsData, error: clientsError } = await supabase
+          .from("clients")
+          .select("id, mei_user_id, razao_social, cnpj, atividade")
+          .ilike("cnpj", `%${cleanedSearch}%`)
+          .limit(20);
+
+        if (!clientsError && clientsData) {
+          for (const client of clientsData) {
+            // Only include MEI users not already linked to this contador
+            if (client.mei_user_id && meiUserIds.has(client.mei_user_id) && !existingMeiUserIds.has(client.mei_user_id)) {
+              const { data: profileData } = await supabase
+                .from("profiles")
+                .select("id, full_name, cpf_cnpj")
+                .eq("id", client.mei_user_id)
+                .maybeSingle();
+
+              if (profileData) {
+                profilesWithClients.push({
+                  ...profileData,
+                  client: {
+                    id: client.id,
+                    razao_social: client.razao_social,
+                    cnpj: client.cnpj,
+                    atividade: client.atividade,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Search by razao_social (company name)
+      const { data: clientsByName, error: nameError } = await supabase
+        .from("clients")
+        .select("id, mei_user_id, razao_social, cnpj, atividade")
+        .ilike("razao_social", `%${searchTerm}%`)
+        .limit(20);
+
+      if (!nameError && clientsByName) {
+        const existingIds = new Set(profilesWithClients.map(p => p.id));
+        
+        for (const client of clientsByName) {
+          // Only include MEI users not already in results and not already linked to this contador
+          if (client.mei_user_id && 
+              meiUserIds.has(client.mei_user_id) && 
+              !existingMeiUserIds.has(client.mei_user_id) &&
+              !existingIds.has(client.mei_user_id)) {
+            const { data: profileData } = await supabase
+              .from("profiles")
+              .select("id, full_name, cpf_cnpj")
+              .eq("id", client.mei_user_id)
+              .maybeSingle();
+
+            if (profileData) {
+              profilesWithClients.push({
+                ...profileData,
+                client: {
+                  id: client.id,
+                  razao_social: client.razao_social,
+                  cnpj: client.cnpj,
+                  atividade: client.atividade,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      // Also search by profile full_name
+      const { data: profilesByName, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name, cpf_cnpj")
+        .ilike("full_name", `%${searchTerm}%`)
+        .limit(20);
+
+      if (!profilesError && profilesByName) {
+        const existingIds = new Set(profilesWithClients.map(p => p.id));
+        
+        for (const profile of profilesByName) {
+          // Only include MEI users not already in results and not already linked to this contador
+          if (meiUserIds.has(profile.id) && 
+              !existingMeiUserIds.has(profile.id) &&
+              !existingIds.has(profile.id)) {
+            // Get client data if exists
+            const { data: clientData } = await supabase
+              .from("clients")
+              .select("id, razao_social, cnpj, atividade")
+              .eq("mei_user_id", profile.id)
+              .maybeSingle();
+
+            profilesWithClients.push({
+              ...profile,
+              client: clientData,
+            });
+          }
+        }
+      }
+
+      setResults(profilesWithClients);
+
+      if (profilesWithClients.length === 0) {
         toast({
           title: "Nenhum resultado",
           description: "Nenhum cliente MEI encontrado com esses dados ou já está vinculado a você",
@@ -285,7 +271,7 @@ export function InviteExistingClient({ contadorUserId, onSuccess }: InviteExisti
               <Label htmlFor="search" className="sr-only">Buscar</Label>
               <Input
                 id="search"
-                placeholder="Buscar por CNPJ ou razão social..."
+                placeholder="Buscar por CNPJ, nome ou razão social..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
