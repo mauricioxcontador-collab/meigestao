@@ -145,6 +145,62 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          ativo: boolean
+          cargo: string
+          client_id: string
+          cpf: string
+          created_at: string
+          data_admissao: string
+          data_demissao: string | null
+          id: string
+          jornada: string
+          nome_completo: string
+          salario_bruto: number
+          tipo_contrato: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cargo: string
+          client_id: string
+          cpf: string
+          created_at?: string
+          data_admissao: string
+          data_demissao?: string | null
+          id?: string
+          jornada?: string
+          nome_completo: string
+          salario_bruto: number
+          tipo_contrato?: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cargo?: string
+          client_id?: string
+          cpf?: string
+          created_at?: string
+          data_admissao?: string
+          data_demissao?: string | null
+          id?: string
+          jornada?: string
+          nome_completo?: string
+          salario_bruto?: number
+          tipo_contrato?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           categoria: string | null
@@ -182,6 +238,50 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      labor_provisions: {
+        Row: {
+          ano: number
+          created_at: string
+          employee_id: string
+          id: string
+          mes: number
+          provisao_decimo_terceiro: number
+          provisao_ferias: number
+          provisao_fgts: number
+          total_provisao: number
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          employee_id: string
+          id?: string
+          mes: number
+          provisao_decimo_terceiro?: number
+          provisao_ferias?: number
+          provisao_fgts?: number
+          total_provisao?: number
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          employee_id?: string
+          id?: string
+          mes?: number
+          provisao_decimo_terceiro?: number
+          provisao_ferias?: number
+          provisao_fgts?: number
+          total_provisao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labor_provisions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -324,6 +424,59 @@ export type Database = {
           },
         ]
       }
+      payroll_calculations: {
+        Row: {
+          ano: number
+          created_at: string
+          custo_total: number
+          employee_id: string
+          fgts: number
+          fgts_adicional: number
+          id: string
+          inss_empregado: number
+          inss_empregador: number
+          mes: number
+          salario_bruto: number
+          salario_liquido: number
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          custo_total: number
+          employee_id: string
+          fgts?: number
+          fgts_adicional?: number
+          id?: string
+          inss_empregado?: number
+          inss_empregador?: number
+          mes: number
+          salario_bruto: number
+          salario_liquido: number
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          custo_total?: number
+          employee_id?: string
+          fgts?: number
+          fgts_adicional?: number
+          id?: string
+          inss_empregado?: number
+          inss_empregador?: number
+          mes?: number
+          salario_bruto?: number
+          salario_liquido?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_calculations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           cpf_cnpj: string | null
@@ -441,6 +594,62 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terminations: {
+        Row: {
+          aviso_previo: number
+          created_at: string
+          data_desligamento: string
+          decimo_terceiro: number
+          employee_id: string
+          ferias_proporcionais: number
+          ferias_vencidas: number
+          id: string
+          multa_fgts: number
+          saldo_salario: number
+          terco_ferias: number
+          tipo_rescisao: string
+          total_rescisao: number
+        }
+        Insert: {
+          aviso_previo?: number
+          created_at?: string
+          data_desligamento: string
+          decimo_terceiro?: number
+          employee_id: string
+          ferias_proporcionais?: number
+          ferias_vencidas?: number
+          id?: string
+          multa_fgts?: number
+          saldo_salario?: number
+          terco_ferias?: number
+          tipo_rescisao: string
+          total_rescisao?: number
+        }
+        Update: {
+          aviso_previo?: number
+          created_at?: string
+          data_desligamento?: string
+          decimo_terceiro?: number
+          employee_id?: string
+          ferias_proporcionais?: number
+          ferias_vencidas?: number
+          id?: string
+          multa_fgts?: number
+          saldo_salario?: number
+          terco_ferias?: number
+          tipo_rescisao?: string
+          total_rescisao?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terminations_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
