@@ -12,6 +12,7 @@ import Goals from "./pages/Goals";
 import PerformanceCharts from "./pages/PerformanceCharts";
 import Reports from "./pages/Reports";
 import AcceptInvite from "./pages/AcceptInvite";
+import LaborModule from "./pages/LaborModule";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/metas" element={<Goals />} />
           <Route path="/graficos" element={<PerformanceCharts />} />
           <Route path="/relatorios" element={<Reports />} />
+          <Route path="/trabalhista" element={<LaborModule />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
