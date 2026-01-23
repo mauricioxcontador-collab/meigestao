@@ -691,6 +691,7 @@ interface Client {
   razao_social: string;
   cnpj: string;
   atividade: string | null;
+  tipo_atividade: string | null;
   data_abertura: string | null;
   limite_faturamento_anual: number | null;
 }
@@ -729,7 +730,7 @@ const DashboardMEI = () => {
 
       const { data: clientData } = await supabase
         .from("clients")
-        .select("id, razao_social, cnpj, atividade, data_abertura, limite_faturamento_anual")
+        .select("id, razao_social, cnpj, atividade, tipo_atividade, data_abertura, limite_faturamento_anual")
         .eq("mei_user_id", session.user.id)
         .maybeSingle();
 
@@ -860,18 +861,17 @@ const DashboardMEI = () => {
     }).format(value);
   };
 
-  const getDASValue = (activity: string): number => {
-    const activityLower = activity.toLowerCase();
-    // MEI de Comércio e Serviços: R$ 87,05
-    if (activityLower.includes("comércio") && activityLower.includes("serviço")) {
-      return 87.05;
+  const getDASValue = (tipoAtividade: string | null): number => {
+    switch (tipoAtividade) {
+      case "comercio":
+        return 82.05;
+      case "servicos":
+        return 86.05;
+      case "comercio_servicos":
+        return 87.05;
+      default:
+        return 82.05;
     }
-    // MEI de Prestação de Serviços: R$ 86,05
-    if (activityLower.includes("serviço")) {
-      return 86.05;
-    }
-    // MEI de Comércio ou Indústria: R$ 82,05
-    return 82.05;
   };
 
   const getDASDescription = (): string => {
@@ -893,7 +893,7 @@ const DashboardMEI = () => {
             // Reload client data after registration
             supabase
               .from("clients")
-              .select("id, razao_social, cnpj, atividade, data_abertura, limite_faturamento_anual")
+              .select("id, razao_social, cnpj, atividade, tipo_atividade, data_abertura, limite_faturamento_anual")
               .eq("id", newClientId)
               .single()
               .then(({ data }) => {
@@ -1016,7 +1016,7 @@ const DashboardMEI = () => {
                     <span className="text-xs font-medium text-warning bg-warning/10 px-2 py-1 rounded-full">DAS</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-1">{getDASDescription()}</p>
-                  <p className="text-2xl lg:text-3xl font-bold">{formatCurrency(getDASValue(client?.atividade || ""))}</p>
+                  <p className="text-2xl lg:text-3xl font-bold">{formatCurrency(getDASValue(client?.tipo_atividade))}</p>
                 </CardContent>
               </Card>
             </div>
