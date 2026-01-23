@@ -2,19 +2,47 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, FileText, Calendar, DollarSign, Briefcase, Pencil, Save, X, User } from "lucide-react";
+import { Building2, FileText, Calendar, DollarSign, Briefcase, Pencil, Save, X, User, Tags } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Client {
   id: string;
   razao_social: string;
   cnpj: string;
   atividade: string | null;
+  tipo_atividade: string | null;
   data_abertura: string | null;
   limite_faturamento_anual: number | null;
 }
+
+type TipoAtividade = "comercio" | "servicos" | "comercio_servicos";
+
+const getTipoAtividadeLabel = (tipo: string | null): string => {
+  switch (tipo) {
+    case "comercio": return "Comércio ou Indústria";
+    case "servicos": return "Prestação de Serviços";
+    case "comercio_servicos": return "Comércio e Serviços";
+    default: return "Não informado";
+  }
+};
+
+const getDASValue = (tipo: string | null): string => {
+  switch (tipo) {
+    case "comercio": return "R$ 82,05";
+    case "servicos": return "R$ 86,05";
+    case "comercio_servicos": return "R$ 87,05";
+    default: return "R$ 82,05";
+  }
+};
 
 interface AccountInfoProps {
   client: Client | null;
@@ -27,6 +55,7 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
   const [formData, setFormData] = useState({
     razao_social: "",
     atividade: "",
+    tipo_atividade: "comercio" as TipoAtividade,
     data_abertura: "",
   });
 
@@ -53,6 +82,7 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
     setFormData({
       razao_social: client.razao_social,
       atividade: client.atividade || "",
+      tipo_atividade: (client.tipo_atividade as TipoAtividade) || "comercio",
       data_abertura: client.data_abertura || "",
     });
     setIsEditing(true);
@@ -70,6 +100,7 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
         .update({
           razao_social: formData.razao_social,
           atividade: formData.atividade || null,
+          tipo_atividade: formData.tipo_atividade,
           data_abertura: formData.data_abertura || null,
         })
         .eq("id", client.id);
@@ -84,6 +115,7 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
           ...client,
           razao_social: formData.razao_social,
           atividade: formData.atividade || null,
+          tipo_atividade: formData.tipo_atividade,
           data_abertura: formData.data_abertura || null,
         });
       }
@@ -173,7 +205,7 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
             </CardContent>
           </Card>
 
-          <Card className="sm:col-span-2 border-0 shadow-lg">
+          <Card className="border-0 shadow-lg">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-warning" />
@@ -187,6 +219,30 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
                 placeholder="Ex: Comércio varejista de produtos"
                 className="h-12 text-base"
               />
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Tags className="h-4 w-4 text-primary" />
+                Tipo de Atividade (DAS)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                value={formData.tipo_atividade}
+                onValueChange={(value: TipoAtividade) => setFormData({ ...formData, tipo_atividade: value })}
+              >
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="comercio">Comércio ou Indústria - R$ 82,05</SelectItem>
+                  <SelectItem value="servicos">Prestação de Serviços - R$ 86,05</SelectItem>
+                  <SelectItem value="comercio_servicos">Comércio e Serviços - R$ 87,05</SelectItem>
+                </SelectContent>
+              </Select>
             </CardContent>
           </Card>
         </div>
@@ -265,6 +321,22 @@ export function AccountInfo({ client, onClientUpdate }: AccountInfoProps) {
           </CardHeader>
           <CardContent>
             <p className="text-xl font-bold">{client.atividade || "Não informada"}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Tags className="h-4 w-4 text-primary" />
+              </div>
+              Tipo de Atividade (DAS)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xl font-bold">{getTipoAtividadeLabel(client.tipo_atividade)}</p>
+            <p className="text-sm text-muted-foreground mt-1">DAS: {getDASValue(client.tipo_atividade)}</p>
           </CardContent>
         </Card>
 

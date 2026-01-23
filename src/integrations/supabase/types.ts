@@ -66,6 +66,7 @@ export type Database = {
           limite_faturamento_anual: number | null
           mei_user_id: string
           razao_social: string
+          tipo_atividade: string | null
           updated_at: string | null
         }
         Insert: {
@@ -78,6 +79,7 @@ export type Database = {
           limite_faturamento_anual?: number | null
           mei_user_id: string
           razao_social: string
+          tipo_atividade?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -90,6 +92,7 @@ export type Database = {
           limite_faturamento_anual?: number | null
           mei_user_id?: string
           razao_social?: string
+          tipo_atividade?: string | null
           updated_at?: string | null
         }
         Relationships: [

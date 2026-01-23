@@ -9,6 +9,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Building2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const validateCNPJ = (cnpj: string): boolean => {
   const cleaned = cnpj.replace(/\D/g, "");
@@ -52,6 +59,7 @@ const clientSchema = z.object({
     }, "CNPJ deve ter 14 dígitos")
     .refine((val) => validateCNPJ(val), "CNPJ inválido"),
   atividade: z.string().min(3, "Atividade deve ter no mínimo 3 caracteres").max(200, "Atividade muito longa"),
+  tipo_atividade: z.enum(["comercio", "servicos", "comercio_servicos"]),
   data_abertura: z.string().optional(),
 });
 
@@ -65,9 +73,13 @@ interface ClientRegistrationFormProps {
 export function ClientRegistrationForm({ userId, onSuccess }: ClientRegistrationFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [tipoAtividade, setTipoAtividade] = useState<"comercio" | "servicos" | "comercio_servicos">("comercio");
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ClientForm>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<ClientForm>({
     resolver: zodResolver(clientSchema),
+    defaultValues: {
+      tipo_atividade: "comercio",
+    },
   });
 
   const formatCNPJ = (value: string) => {
@@ -99,6 +111,7 @@ export function ClientRegistrationForm({ userId, onSuccess }: ClientRegistration
       razao_social: data.razao_social.trim(),
       cnpj: cleanedCNPJ,
       atividade: data.atividade.trim(),
+      tipo_atividade: data.tipo_atividade,
       data_abertura: data.data_abertura || null,
     };
 
@@ -181,6 +194,29 @@ export function ClientRegistrationForm({ userId, onSuccess }: ClientRegistration
               />
               {errors.atividade && (
                 <p className="text-sm text-destructive mt-1">{errors.atividade.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="tipo_atividade">Tipo de Atividade (para cálculo do DAS) *</Label>
+              <Select
+                value={tipoAtividade}
+                onValueChange={(value: "comercio" | "servicos" | "comercio_servicos") => {
+                  setTipoAtividade(value);
+                  setValue("tipo_atividade", value);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione o tipo de atividade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="comercio">Comércio ou Indústria - DAS R$ 82,05</SelectItem>
+                  <SelectItem value="servicos">Prestação de Serviços - DAS R$ 86,05</SelectItem>
+                  <SelectItem value="comercio_servicos">Comércio e Serviços - DAS R$ 87,05</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.tipo_atividade && (
+                <p className="text-sm text-destructive mt-1">{errors.tipo_atividade.message}</p>
               )}
             </div>
 
