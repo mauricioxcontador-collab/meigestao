@@ -862,13 +862,16 @@ const DashboardMEI = () => {
 
   const getDASValue = (activity: string): number => {
     const activityLower = activity.toLowerCase();
+    // MEI de Comércio e Serviços: R$ 87,05
     if (activityLower.includes("comércio") && activityLower.includes("serviço")) {
-      return 81.90;
+      return 87.05;
     }
+    // MEI de Prestação de Serviços: R$ 86,05
     if (activityLower.includes("serviço")) {
-      return 80.90;
+      return 86.05;
     }
-    return 76.90;
+    // MEI de Comércio ou Indústria: R$ 82,05
+    return 82.05;
   };
 
   const getDASDescription = (): string => {
