@@ -962,6 +962,42 @@ const DashboardMEI = () => {
               </div>
             </div>
 
+            {/* DAS Alert */}
+            {client && (
+              <div className="relative overflow-hidden rounded-2xl border border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent p-5 shadow-lg">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-warning/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+                <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-warning/20 flex items-center justify-center">
+                      <AlertCircle className="h-7 w-7 text-warning" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">DAS Mensal</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {client.tipo_atividade === 'comercio' && 'Comércio ou Indústria'}
+                        {client.tipo_atividade === 'servicos' && 'Prestação de Serviços'}
+                        {client.tipo_atividade === 'comercio_servicos' && 'Comércio e Serviços'}
+                        {!client.tipo_atividade && 'Tipo não definido'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm text-muted-foreground">Valor</p>
+                      <p className="text-2xl font-bold text-warning">{formatCurrency(getDASValue(client.tipo_atividade))}</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm text-muted-foreground">Vencimento</p>
+                      <p className="text-2xl font-bold text-foreground flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-warning" />
+                        Dia 20
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Quick Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-card to-card/80">
