@@ -7,7 +7,7 @@ import { useState } from "react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
 const Landing = () => {
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [isQuarterly, setIsQuarterly] = useState(false);
 
   const features = [
     {
@@ -310,23 +310,23 @@ const Landing = () => {
             
             <div className="inline-flex items-center gap-4 p-1.5 rounded-full bg-muted">
               <button
-                onClick={() => setIsAnnual(false)}
-                className={`px-6 py-2.5 rounded-full font-medium transition-all ${!isAnnual ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={() => setIsQuarterly(false)}
+                className={`px-6 py-2.5 rounded-full font-medium transition-all ${!isQuarterly ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
               >
                 Mensal
               </button>
               <button
-                onClick={() => setIsAnnual(true)}
-                className={`px-6 py-2.5 rounded-full font-medium transition-all ${isAnnual ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
+                onClick={() => setIsQuarterly(true)}
+                className={`px-6 py-2.5 rounded-full font-medium transition-all ${isQuarterly ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground'}`}
               >
-                Anual
-                <span className="ml-2 text-xs bg-accent text-white px-2 py-0.5 rounded-full">-20%</span>
+                Trimestral
+                <span className="ml-2 text-xs bg-accent text-white px-2 py-0.5 rounded-full">Economize</span>
               </button>
             </div>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Basic Plan */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Plano Básico */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -337,19 +337,22 @@ const Landing = () => {
                 <div className="mb-6">
                   <h3 className="text-xl font-bold mb-2">Básico</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">R$ {isAnnual ? '15' : '19'}</span>
-                    <span className="text-muted-foreground">/mês</span>
+                    <span className="text-4xl font-bold">R$ {isQuarterly ? '99,99' : '39,90'}</span>
+                    <span className="text-muted-foreground">/{isQuarterly ? 'trimestre' : 'mês'}</span>
                   </div>
+                  {isQuarterly && (
+                    <p className="text-sm text-accent mt-2">Equivale a R$ 33,33/mês</p>
+                  )}
                 </div>
                 
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {["Dashboard básico", "Controle receitas/despesas", "Alertas por e-mail", "Relatórios PDF"].map((item, i) => (
+                  {["Dashboard completo", "Controle receitas/despesas", "Alertas por e-mail", "Relatórios PDF", "Cálculo automático DAS"].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-accent" />
                       <span>{item}</span>
                     </li>
                   ))}
-                  {["Chat com contador", "Alertas WhatsApp"].map((item, i) => (
+                  {["Alertas WhatsApp", "Suporte prioritário"].map((item, i) => (
                     <li key={i} className="flex items-center gap-3 text-muted-foreground">
                       <X className="w-5 h-5" />
                       <span>{item}</span>
@@ -365,7 +368,7 @@ const Landing = () => {
               </Card>
             </motion.div>
 
-            {/* Pro Plan */}
+            {/* Plano Pro */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -374,19 +377,22 @@ const Landing = () => {
             >
               <Card className="p-8 h-full flex flex-col border-2 border-primary relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl">
-                  POPULAR
+                  RECOMENDADO
                 </div>
                 
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2">Profissional</h3>
+                  <h3 className="text-xl font-bold mb-2">Pro</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">R$ {isAnnual ? '20' : '25'}</span>
-                    <span className="text-muted-foreground">/mês</span>
+                    <span className="text-4xl font-bold">R$ {isQuarterly ? '126,99' : '49,90'}</span>
+                    <span className="text-muted-foreground">/{isQuarterly ? 'trimestre' : 'mês'}</span>
                   </div>
+                  {isQuarterly && (
+                    <p className="text-sm text-accent mt-2">Equivale a R$ 42,33/mês</p>
+                  )}
                 </div>
                 
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {["Tudo do Básico", "Dashboard completo", "Chat com contador", "Alertas WhatsApp", "Relatórios avançados", "Suporte prioritário"].map((item, i) => (
+                  {["Tudo do Básico", "Alertas WhatsApp", "Chat com contador", "Relatórios avançados", "Suporte prioritário", "IA Assistente"].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-accent" />
                       <span>{item}</span>
@@ -396,39 +402,6 @@ const Landing = () => {
 
                 <Link to="/auth" className="w-full">
                   <Button className="w-full h-12 font-semibold gradient-hero text-white shadow-glow">
-                    Começar Agora
-                  </Button>
-                </Link>
-              </Card>
-            </motion.div>
-
-            {/* Premium Plan */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-            >
-              <Card className="p-8 h-full flex flex-col border-border/50 hover:border-secondary/30 transition-all hover:shadow-lg">
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2">Premium</h3>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">R$ {isAnnual ? '27' : '33'}</span>
-                    <span className="text-muted-foreground">/mês</span>
-                  </div>
-                </div>
-                
-                <ul className="space-y-4 mb-8 flex-grow">
-                  {["Tudo do Profissional", "Consultoria mensal", "Preparação DASN", "Upload ilimitado", "Análise financeira", "Suporte 24/7"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-accent" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link to="/auth" className="w-full">
-                  <Button variant="outline" className="w-full h-12 font-semibold">
                     Começar Agora
                   </Button>
                 </Link>
