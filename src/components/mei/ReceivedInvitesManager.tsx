@@ -57,11 +57,24 @@ export function ReceivedInvitesManager() {
     }
   };
 
-  const handleAcceptInvite = async (inviteId: string) => {
-    setActionLoading(inviteId);
+  const handleAcceptInvite = async (invite: ReceivedInvite) => {
+    setActionLoading(invite.id);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
+
+      // Get the invitation details to find the contador who sent it
+      const { data: inviteData, error: inviteError } = await supabase
+        .from("contador_invitations")
+        .select("*")
+        .eq("id", invite.id)
+        .single();
+
+      if (inviteError || !inviteData) throw new Error("Convite não encontrado");
+
+      // Find which contador created this invitation by looking at contador_user_id stored
+      // The contador_user_id should be stored when contador creates the invitation
+      const contadorUserId = (inviteData as any).contador_user_id;
 
       // Update invitation status
       const { error: updateError } = await supabase
@@ -70,9 +83,21 @@ export function ReceivedInvitesManager() {
           status: "accepted",
           accepted_at: new Date().toISOString(),
         })
-        .eq("id", inviteId);
+        .eq("id", invite.id);
 
       if (updateError) throw updateError;
+
+      // Update the client record to link with the contador
+      if (contadorUserId) {
+        const { error: clientError } = await supabase
+          .from("clients")
+          .update({ contador_user_id: contadorUserId })
+          .eq("mei_user_id", user.id);
+
+        if (clientError) {
+          console.error("Error updating client:", clientError);
+        }
+      }
 
       toast({
         title: "Convite aceito!",
@@ -234,7 +259,7 @@ export function ReceivedInvitesManager() {
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
-                      onClick={() => handleAcceptInvite(invite.id)}
+                      onClick={() => handleAcceptInvite(invite)}
                       disabled={actionLoading === invite.id}
                       className="bg-success hover:bg-success/90"
                     >
