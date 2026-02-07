@@ -19,9 +19,9 @@ const meiMenuItems = [
 ];
 
 const contadorMenuItems = [
-  { title: "Dashboard", tab: "contador", icon: Home, isRoute: true },
-  { title: "Meus Clientes", tab: "contador-gestao", icon: Users },
-  { title: "Minha Conta", tab: "conta", icon: User },
+  { title: "Dashboard", tab: "dashboard", icon: Home, basePath: "/contador" },
+  { title: "Meus Clientes", tab: "contador-gestao", icon: Users, basePath: "/contador" },
+  { title: "Minha Conta", tab: "conta", icon: User, basePath: "/contador" },
 ];
 
 interface AppSidebarProps {
@@ -41,18 +41,32 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const menuItems = useMemo(() => {
     return isContador ? contadorMenuItems : meiMenuItems;
   }, [isContador]);
-  const handleTabChange = (tab: string, isRoute?: boolean) => {
+  const handleTabChange = (item: typeof menuItems[0]) => {
     // Close sidebar on mobile after navigation
     if (window.innerWidth < 1024) {
       setExpanded(false);
     }
+    
+    const tab = item.tab;
+    const isRoute = 'isRoute' in item && item.isRoute;
+    const basePath = 'basePath' in item ? item.basePath : '/dashboard';
     
     if (isRoute) {
       navigate(`/${tab}`);
       return;
     }
     
-    // If we're on a different route, navigate to /dashboard first
+    // For contador menu items with basePath
+    if (basePath === "/contador") {
+      if (tab === "dashboard") {
+        navigate("/contador");
+      } else {
+        navigate(`/contador?tab=${tab}`);
+      }
+      return;
+    }
+    
+    // Default behavior for MEI
     if (currentPath !== "/dashboard") {
       if (tab === "dashboard") {
         navigate("/dashboard");
@@ -70,9 +84,20 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   };
 
   const isItemActive = (item: typeof menuItems[0]) => {
-    if (item.isRoute) {
+    const isRoute = 'isRoute' in item && item.isRoute;
+    const basePath = 'basePath' in item ? item.basePath : '/dashboard';
+    
+    if (isRoute) {
       return currentPath === `/${item.tab}`;
     }
+    
+    if (basePath === "/contador") {
+      if (item.tab === "dashboard") {
+        return currentPath === "/contador" && !searchParams.get("tab");
+      }
+      return currentPath === "/contador" && currentTab === item.tab;
+    }
+    
     return currentPath === "/dashboard" && currentTab === item.tab;
   };
 
@@ -159,7 +184,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             return (
               <button
                 key={item.tab}
-                onClick={() => handleTabChange(item.tab, item.isRoute)}
+                onClick={() => handleTabChange(item)}
                 className={cn(
                   "w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200",
                   "text-left group",
