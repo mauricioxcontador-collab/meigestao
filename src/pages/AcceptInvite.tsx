@@ -116,19 +116,37 @@ export default function AcceptInvite() {
           });
       }
 
-      // Create client relationship
-      const { error: clientError } = await supabase
+      // Check if client already exists for this MEI
+      const { data: existingClient } = await supabase
         .from("clients")
-        .insert({
-          mei_user_id: invitation.mei_user_id,
-          contador_user_id: user.id,
-          cnpj: "PENDENTE",
-          razao_social: "Cliente MEI",
-        });
+        .select("id")
+        .eq("mei_user_id", invitation.mei_user_id)
+        .single();
 
-      // Ignore client error if it's a duplicate
-      if (clientError && !clientError.message.includes("duplicate")) {
-        console.error("Error creating client:", clientError);
+      if (existingClient) {
+        // Update existing client to link with this contador
+        const { error: updateClientError } = await supabase
+          .from("clients")
+          .update({ contador_user_id: user.id })
+          .eq("id", existingClient.id);
+
+        if (updateClientError) {
+          console.error("Error updating client:", updateClientError);
+        }
+      } else {
+        // Create new client relationship
+        const { error: clientError } = await supabase
+          .from("clients")
+          .insert({
+            mei_user_id: invitation.mei_user_id,
+            contador_user_id: user.id,
+            cnpj: "PENDENTE",
+            razao_social: "Cliente MEI",
+          });
+
+        if (clientError && !clientError.message.includes("duplicate")) {
+          console.error("Error creating client:", clientError);
+        }
       }
 
       toast({
