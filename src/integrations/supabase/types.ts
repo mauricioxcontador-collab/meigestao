@@ -116,6 +116,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           contador_email: string
+          contador_user_id: string | null
           created_at: string
           expires_at: string
           id: string
@@ -127,6 +128,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           contador_email: string
+          contador_user_id?: string | null
           created_at?: string
           expires_at?: string
           id?: string
@@ -138,6 +140,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           contador_email?: string
+          contador_user_id?: string | null
           created_at?: string
           expires_at?: string
           id?: string
@@ -146,7 +149,15 @@ export type Database = {
           permissions?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contador_invitations_contador_user_id_fkey"
+            columns: ["contador_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employees: {
         Row: {
