@@ -210,9 +210,10 @@ export function InviteExistingClient({ contadorUserId, onSuccess }: InviteExisti
         .insert({
           mei_user_id: meiProfile.id,
           contador_email: "contador-request", // Marker for contador-initiated invites
+          contador_user_id: contadorUserId,
           permissions: "readonly",
           status: "pending",
-        });
+        } as any);
 
       if (error) throw error;
 
