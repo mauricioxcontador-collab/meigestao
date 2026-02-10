@@ -159,6 +159,57 @@ export type Database = {
           },
         ]
       }
+      contador_revenues: {
+        Row: {
+          categoria: string
+          client_id: string | null
+          contador_user_id: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria?: string
+          client_id?: string | null
+          contador_user_id: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          client_id?: string | null
+          contador_user_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contador_revenues_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contador_revenues_contador_user_id_fkey"
+            columns: ["contador_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           ativo: boolean
