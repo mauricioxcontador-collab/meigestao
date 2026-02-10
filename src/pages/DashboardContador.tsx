@@ -8,11 +8,14 @@ import { Users, AlertCircle, TrendingUp, FileText, DollarSign, TrendingDown, Loa
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientDetailModal from "@/components/contador/ClientDetailModal";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { AddClientForm } from "@/components/contador/AddClientForm";
 import { InviteExistingClient } from "@/components/contador/InviteExistingClient";
 import { ContadorRevenuesManager } from "@/components/contador/ContadorRevenuesManager";
+import { ContadorExpensesManager } from "@/components/contador/ContadorExpensesManager";
+import { ContadorDashboardCharts } from "@/components/contador/ContadorDashboardCharts";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface Client {
@@ -142,7 +145,7 @@ const DashboardContador = () => {
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground mb-2">Meu Escritório</h1>
               <p className="text-muted-foreground">
-                Gerencie seus honorários e receitas do escritório
+                Gerencie seus honorários, despesas e acompanhe o desempenho do escritório
               </p>
             </div>
 
@@ -184,11 +187,34 @@ const DashboardContador = () => {
               </Card>
             </div>
 
-            {/* Contador's own revenues */}
-            <ContadorRevenuesManager
-              contadorUserId={user.id}
-              clients={clients.map((c) => ({ id: c.id, razao_social: c.razao_social }))}
-            />
+            {/* Dashboard Charts */}
+            <ContadorDashboardCharts contadorUserId={user.id} />
+
+            {/* Receitas & Despesas Tabs */}
+            <div className="mt-8">
+              <Tabs defaultValue="receitas">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="receitas">
+                    <DollarSign className="w-4 h-4 mr-2" /> Receitas
+                  </TabsTrigger>
+                  <TabsTrigger value="despesas">
+                    <TrendingDown className="w-4 h-4 mr-2" /> Despesas
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="receitas">
+                  <ContadorRevenuesManager
+                    contadorUserId={user.id}
+                    clients={clients.map((c) => ({ id: c.id, razao_social: c.razao_social }))}
+                  />
+                </TabsContent>
+                <TabsContent value="despesas">
+                  <ContadorExpensesManager
+                    contadorUserId={user.id}
+                    clients={clients.map((c) => ({ id: c.id, razao_social: c.razao_social }))}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         )}
 
