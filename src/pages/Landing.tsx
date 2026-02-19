@@ -5,9 +5,29 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
+import { useSubscription, PLANS } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
 
 const Landing = () => {
   const [isQuarterly, setIsQuarterly] = useState(false);
+  const { checkout, subscribed, planName } = useSubscription();
+  const { toast } = useToast();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const handleCheckout = async (priceId: string, plan: string) => {
+    setLoadingPlan(plan);
+    try {
+      await checkout(priceId);
+    } catch (err: any) {
+      toast({
+        title: "Erro ao iniciar pagamento",
+        description: err?.message || "Faça login primeiro para assinar um plano.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   const features = [
     {
@@ -360,11 +380,14 @@ const Landing = () => {
                   ))}
                 </ul>
 
-                <Link to="/auth" className="w-full">
-                  <Button variant="outline" className="w-full h-12 font-semibold">
-                    Começar Agora
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full h-12 font-semibold"
+                  disabled={loadingPlan === "basico" || (subscribed && planName === "Básico")}
+                  onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
+                >
+                  {subscribed && planName === "Básico" ? "Plano Atual" : loadingPlan === "basico" ? "Carregando..." : "Assinar Agora"}
+                </Button>
               </Card>
             </motion.div>
 
@@ -400,11 +423,13 @@ const Landing = () => {
                   ))}
                 </ul>
 
-                <Link to="/auth" className="w-full">
-                  <Button className="w-full h-12 font-semibold gradient-hero text-white shadow-glow">
-                    Começar Agora
-                  </Button>
-                </Link>
+                <Button
+                  className="w-full h-12 font-semibold gradient-hero text-white shadow-glow"
+                  disabled={loadingPlan === "pro" || (subscribed && planName === "Pro")}
+                  onClick={() => handleCheckout(PLANS.pro.price_id, "pro")}
+                >
+                  {subscribed && planName === "Pro" ? "Plano Atual" : loadingPlan === "pro" ? "Carregando..." : "Assinar Agora"}
+                </Button>
               </Card>
             </motion.div>
           </div>
