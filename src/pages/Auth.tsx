@@ -5,11 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Building2, Calculator } from "lucide-react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
+import { PLANS } from "@/hooks/useSubscription";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,23 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [accountType, setAccountType] = useState<"mei" | "contador">("mei");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const triggerCheckoutAfterLogin = async () => {
+    const plan = searchParams.get("plan") as keyof typeof PLANS | null;
+    if (plan && PLANS[plan]) {
+      try {
+        const { data, error } = await supabase.functions.invoke("create-checkout", {
+          body: { priceId: PLANS[plan].price_id },
+        });
+        if (error) throw error;
+        if (data?.url) window.open(data.url, "_blank");
+      } catch (err: any) {
+        console.error("Checkout after login failed:", err);
+      }
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +103,9 @@ const Auth = () => {
 
       // Check user role to redirect appropriately
       if (data.user) {
+        // Trigger checkout if redirected from landing with plan param
+        await triggerCheckoutAfterLogin();
+
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
