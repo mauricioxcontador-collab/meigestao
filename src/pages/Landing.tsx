@@ -85,11 +85,13 @@ const Landing = () => {
             <Link to="/auth">
               <Button variant="ghost" className="font-medium">Entrar</Button>
             </Link>
-            <Link to="/auth">
-              <Button className="gradient-hero text-white font-semibold shadow-glow px-6">
-                Começar Grátis
-              </Button>
-            </Link>
+            <Button
+              className="gradient-hero text-white font-semibold shadow-glow px-6"
+              onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
+              disabled={loadingPlan === "basico"}
+            >
+              {loadingPlan === "basico" ? "Carregando..." : "Começar Grátis"}
+            </Button>
           </div>
         </div>
       </header>
@@ -125,12 +127,15 @@ const Landing = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/auth">
-                <Button size="lg" className="gradient-hero text-white font-semibold text-lg px-8 h-14 shadow-glow">
-                  Criar Conta Grátis
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                className="gradient-hero text-white font-semibold text-lg px-8 h-14 shadow-glow"
+                onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
+                disabled={loadingPlan === "basico"}
+              >
+                {loadingPlan === "basico" ? "Carregando..." : "Criar Conta Grátis"}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
               <Link to="/auth">
                 <Button size="lg" variant="outline" className="font-semibold text-lg px-8 h-14 border-2">
                   Ver Demonstração
@@ -458,12 +463,15 @@ const Landing = () => {
           <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
             Simplifique a gestão do seu MEI e foque no que realmente importa: seu negócio
           </p>
-          <Link to="/auth">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold text-lg px-10 h-14 shadow-xl">
-              Criar Minha Conta Grátis
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            className="bg-white text-primary hover:bg-white/90 font-semibold text-lg px-10 h-14 shadow-xl"
+            onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
+            disabled={loadingPlan === "basico"}
+          >
+            {loadingPlan === "basico" ? "Carregando..." : "Criar Minha Conta Grátis"}
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
         </motion.div>
       </section>
 
