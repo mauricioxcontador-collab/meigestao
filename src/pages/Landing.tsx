@@ -1,27 +1,40 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, BarChart3, Bell, FileText, Shield, Zap, Check, X, ArrowRight, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 import { useSubscription, PLANS } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Landing = () => {
   const [isQuarterly, setIsQuarterly] = useState(false);
   const { checkout, subscribed, planName } = useSubscription();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleCheckout = async (priceId: string, plan: string) => {
+    if (!session) {
+      navigate(`/auth?plan=${plan}`);
+      return;
+    }
     setLoadingPlan(plan);
     try {
       await checkout(priceId);
     } catch (err: any) {
       toast({
         title: "Erro ao iniciar pagamento",
-        description: err?.message || "Faça login primeiro para assinar um plano.",
+        description: err?.message || "Tente novamente.",
         variant: "destructive",
       });
     } finally {
