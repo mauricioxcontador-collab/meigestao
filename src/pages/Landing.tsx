@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
+import FloatingChatWidget from "@/components/chat/FloatingChatWidget";
 import { useSubscription, PLANS } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -501,6 +502,8 @@ const Landing = () => {
           </div>
         </div>
       </footer>
+
+      <FloatingChatWidget />
     </div>
   );
 };
