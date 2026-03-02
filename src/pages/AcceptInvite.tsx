@@ -31,18 +31,21 @@ export default function AcceptInvite() {
     }
 
     try {
-      // Check if user is logged in
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user || null);
 
-      // Fetch invitation
-      const { data, error: fetchError } = await supabase
-        .from("contador_invitations")
-        .select("*")
-        .eq("invite_token", token)
-        .single();
+      // Use edge function for secure token lookup
+      const response = await supabase.functions.invoke('manage-invitation', {
+        body: { token, action: 'lookup' }
+      });
 
-      if (fetchError) throw fetchError;
+      if (response.error) {
+        setError("Convite não encontrado");
+        setLoading(false);
+        return;
+      }
+
+      const data = response.data?.invitation;
 
       if (!data) {
         setError("Convite não encontrado");
@@ -79,74 +82,22 @@ export default function AcceptInvite() {
 
   const handleAcceptInvite = async () => {
     if (!user) {
-      // Redirect to auth with return URL
       navigate(`/auth?redirect=/aceitar-convite?token=${token}`);
       return;
     }
 
     setAccepting(true);
     try {
-      // Update invitation status
-      const { error: updateError } = await supabase
-        .from("contador_invitations")
-        .update({
-          status: "accepted",
-          accepted_at: new Date().toISOString(),
-          contador_email: user.email,
-        })
-        .eq("id", invitation.id);
+      const response = await supabase.functions.invoke('manage-invitation', {
+        body: { token, action: 'accept' }
+      });
 
-      if (updateError) throw updateError;
-
-      // Add contador role if not already has it
-      const { data: existingRole } = await supabase
-        .from("user_roles")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("role", "contador")
-        .single();
-
-      if (!existingRole) {
-        // Note: This might fail due to RLS, but that's okay - the role might be set via trigger
-        await supabase
-          .from("user_roles")
-          .insert({
-            user_id: user.id,
-            role: "contador",
-          });
+      if (response.error) {
+        throw new Error(response.error.message || 'Erro ao aceitar convite');
       }
 
-      // Check if client already exists for this MEI
-      const { data: existingClient } = await supabase
-        .from("clients")
-        .select("id")
-        .eq("mei_user_id", invitation.mei_user_id)
-        .single();
-
-      if (existingClient) {
-        // Update existing client to link with this contador
-        const { error: updateClientError } = await supabase
-          .from("clients")
-          .update({ contador_user_id: user.id })
-          .eq("id", existingClient.id);
-
-        if (updateClientError) {
-          console.error("Error updating client:", updateClientError);
-        }
-      } else {
-        // Create new client relationship
-        const { error: clientError } = await supabase
-          .from("clients")
-          .insert({
-            mei_user_id: invitation.mei_user_id,
-            contador_user_id: user.id,
-            cnpj: "PENDENTE",
-            razao_social: "Cliente MEI",
-          });
-
-        if (clientError && !clientError.message.includes("duplicate")) {
-          console.error("Error creating client:", clientError);
-        }
+      if (response.data?.error) {
+        throw new Error(response.data.error);
       }
 
       toast({
