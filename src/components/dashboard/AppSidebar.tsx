@@ -1,4 +1,4 @@
-import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target, BarChart2, FileText, Users, Briefcase } from "lucide-react";
+import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target, BarChart2, FileText, Users, Briefcase, Calculator } from "lucide-react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 import { useState, useMemo } from "react";
@@ -10,6 +10,7 @@ const meiMenuItems = [
   { title: "Dashboard", tab: "dashboard", icon: Home },
   { title: "Receitas", tab: "receitas", icon: DollarSign },
   { title: "Despesas", tab: "despesas", icon: TrendingDown },
+  { title: "Impostos", tab: "impostos", icon: Calculator },
   { title: "Trabalhista", tab: "trabalhista", icon: Briefcase, isRoute: true },
   { title: "Metas", tab: "metas", icon: Target, isRoute: true },
   { title: "Gráficos", tab: "graficos", icon: BarChart2, isRoute: true },

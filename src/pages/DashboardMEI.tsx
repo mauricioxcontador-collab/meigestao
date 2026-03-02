@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet, Loader2 } from "lucide-react";
+import { TaxSimulation } from "@/components/tax/TaxSimulation";
 import { MonthlyGrowthChart } from "@/components/charts/MonthlyGrowthChart";
 import { useToast } from "@/hooks/use-toast";
 import { ClientRegistrationForm } from "@/components/dashboard/ClientRegistrationForm";
@@ -914,6 +915,8 @@ const DashboardMEI = () => {
         return client && <RevenuesList clientId={client.id} />;
       case "despesas":
         return client && <ExpensesList clientId={client.id} />;
+      case "impostos":
+        return client && <TaxSimulation clientId={client.id} tipoAtividade={client.tipo_atividade} />;
       case "contador-gestao":
         return (
           <div className="space-y-6">
