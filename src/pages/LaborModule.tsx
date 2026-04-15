@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Users, Calculator, FileText, PiggyBank, LayoutDashboard } from "lucide-react";
+import { Loader2, Users, Calculator, FileText, PiggyBank, LayoutDashboard, UserMinus } from "lucide-react";
 import { useLaborData, Employee } from "@/hooks/useLaborData";
 import { EmployeeForm } from "@/components/labor/EmployeeForm";
 import { EmployeeList } from "@/components/labor/EmployeeList";
