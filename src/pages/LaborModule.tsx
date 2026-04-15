@@ -121,7 +121,7 @@ export default function LaborModule() {
           </div>
 
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 h-auto p-1">
+            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 h-auto p-1">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <LayoutDashboard className="w-4 h-4" />
                 <span className="hidden sm:inline">Dashboard</span>
@@ -133,6 +133,10 @@ export default function LaborModule() {
               <TabsTrigger value="folha" className="flex items-center gap-2">
                 <Calculator className="w-4 h-4" />
                 <span className="hidden sm:inline">Folha</span>
+              </TabsTrigger>
+              <TabsTrigger value="rescisao" className="flex items-center gap-2">
+                <UserMinus className="w-4 h-4" />
+                <span className="hidden sm:inline">Rescisão</span>
               </TabsTrigger>
               <TabsTrigger value="provisoes" className="flex items-center gap-2">
                 <PiggyBank className="w-4 h-4" />
@@ -162,7 +166,7 @@ export default function LaborModule() {
               {showPayrollCalc && selectedEmployee ? (
                 <PayrollCalculator employee={selectedEmployee} onSave={savePayroll} onClose={closeCalculators} />
               ) : showTerminationCalc && selectedEmployee ? (
-                <TerminationCalculator employee={selectedEmployee} onSave={saveTermination} onClose={closeCalculators} />
+                <TerminationCalculator employees={[selectedEmployee]} onSave={saveTermination} onClose={closeCalculators} />
               ) : (
                 <EmployeeList
                   employees={employees}
@@ -171,6 +175,14 @@ export default function LaborModule() {
                   onTerminate={handleTerminate}
                 />
               )}
+            </TabsContent>
+
+            <TabsContent value="rescisao" className="space-y-6">
+              <TerminationCalculator
+                employees={employees}
+                onSave={saveTermination}
+                onClose={() => {}}
+              />
             </TabsContent>
 
             <TabsContent value="provisoes">
