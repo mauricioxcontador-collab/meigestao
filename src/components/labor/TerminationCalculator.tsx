@@ -330,10 +330,10 @@ export function TerminationCalculator({ employees, onSave, onClose }: Terminatio
                 <p className="text-xs text-muted-foreground">INSS 8% sobre saldo de salário</p>
               </CardContent>
             </Card>
-            <Card className="border-green-500/20 bg-green-500/5">
+            <Card className="border-accent/20 bg-accent/5">
               <CardContent className="pt-6">
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">Valor Líquido</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(valorLiquido)}</p>
+                <p className="text-2xl font-bold text-accent-foreground">{formatCurrency(valorLiquido)}</p>
               </CardContent>
             </Card>
           </div>
@@ -415,9 +415,9 @@ export function TerminationCalculator({ employees, onSave, onClose }: Terminatio
 
               <Separator />
 
-              <div className="flex justify-between items-center p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="flex justify-between items-center p-4 rounded-lg bg-accent/10 border border-accent/20">
                 <span className="font-bold text-lg">Valor Líquido a Pagar</span>
-                <span className="text-2xl font-bold text-green-600">{formatCurrency(valorLiquido)}</span>
+                <span className="text-2xl font-bold text-accent-foreground">{formatCurrency(valorLiquido)}</span>
               </div>
             </CardContent>
           </Card>
