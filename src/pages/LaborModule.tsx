@@ -22,6 +22,7 @@ export default function LaborModule() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showPayrollCalc, setShowPayrollCalc] = useState(false);
   const [showTerminationCalc, setShowTerminationCalc] = useState(false);
+  const [showTerminationTab, setShowTerminationTab] = useState(false);
 
   const {
     employees,
