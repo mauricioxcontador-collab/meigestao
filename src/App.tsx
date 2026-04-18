@@ -13,6 +13,7 @@ import PerformanceCharts from "./pages/PerformanceCharts";
 import Reports from "./pages/Reports";
 import AcceptInvite from "./pages/AcceptInvite";
 import LaborModule from "./pages/LaborModule";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/graficos" element={<ProtectedRoute><PerformanceCharts /></ProtectedRoute>} />
           <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/trabalhista" element={<ProtectedRoute><LaborModule /></ProtectedRoute>} />
+          <Route path="/precificacao" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

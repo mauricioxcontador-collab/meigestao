@@ -593,6 +593,69 @@ export type Database = {
           },
         ]
       }
+      pricing_calculations: {
+        Row: {
+          client_id: string
+          created_at: string
+          custo_embalagem: number
+          custo_gasolina: number
+          custo_produto: number
+          custo_taxas: number
+          custo_total_unitario: number
+          custo_transporte: number
+          despesas_fixas_mensais: number
+          id: string
+          lucro_unitario: number
+          margem_desejada: number
+          margem_real: number
+          nome: string
+          preco_venda: number
+          quantidade_vendas: number
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          custo_embalagem?: number
+          custo_gasolina?: number
+          custo_produto?: number
+          custo_taxas?: number
+          custo_total_unitario?: number
+          custo_transporte?: number
+          despesas_fixas_mensais?: number
+          id?: string
+          lucro_unitario?: number
+          margem_desejada?: number
+          margem_real?: number
+          nome: string
+          preco_venda?: number
+          quantidade_vendas?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          custo_embalagem?: number
+          custo_gasolina?: number
+          custo_produto?: number
+          custo_taxas?: number
+          custo_total_unitario?: number
+          custo_transporte?: number
+          despesas_fixas_mensais?: number
+          id?: string
+          lucro_unitario?: number
+          margem_desejada?: number
+          margem_real?: number
+          nome?: string
+          preco_venda?: number
+          quantidade_vendas?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cpf_cnpj: string | null
