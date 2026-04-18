@@ -124,7 +124,7 @@ export default function Pricing() {
     else arr.push({ type: "ok", text: "Margem dentro da faixa saudável para o seu negócio." });
 
     if (calc.lucroUnitario <= 0) arr.push({ type: "warn", text: "Você está cobrando ABAIXO do custo. Aumente o preço imediatamente." });
-    if (calc.rateioFixo > calc.custoProduto && custoProduto > 0)
+    if (calc.rateioFixo > custoProduto && custoProduto > 0)
       arr.push({ type: "info", text: "Suas despesas fixas pesam mais que o custo do produto. Considere vender mais para diluir custos." });
 
     const desejado = 100;
