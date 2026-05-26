@@ -107,7 +107,7 @@ const Landing = () => {
             >
               {loadingPlan === "basico" ? "..." : (
                 <>
-                  <span className="hidden sm:inline">Começar Grátis</span>
+                  <span className="hidden sm:inline">Começar agora</span>
                   <span className="sm:hidden">Grátis</span>
                 </>
               )}
@@ -153,7 +153,7 @@ const Landing = () => {
                 onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
                 disabled={loadingPlan === "basico"}
               >
-                {loadingPlan === "basico" ? "Carregando..." : "Criar Conta Grátis"}
+                {loadingPlan === "basico" ? "Carregando..." : "Criar conta agora"}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Link to="/auth" className="w-full sm:w-auto">
@@ -489,7 +489,7 @@ const Landing = () => {
             onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
             disabled={loadingPlan === "basico"}
           >
-            {loadingPlan === "basico" ? "Carregando..." : "Criar Minha Conta Grátis"}
+            {loadingPlan === "basico" ? "Carregando..." : "Criar minha conta"}
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </motion.div>
