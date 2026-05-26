@@ -941,20 +941,20 @@ const DashboardMEI = () => {
         return (
           <div className="space-y-8">
             {/* Hero Header */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-secondary to-primary p-8 lg:p-10">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-secondary to-primary p-5 sm:p-8 lg:p-10">
               <div className="absolute inset-0 opacity-30">
                 <div className="absolute top-0 right-0 w-80 h-80 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-60 h-60 bg-white/20 rounded-full translate-y-1/2 -translate-x-1/4 blur-3xl" />
               </div>
-              <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-6">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl border border-white/30">
-                  <img src={logoMeiGestao} alt="MEI Gestão" className="w-14 h-14 lg:w-16 lg:h-16 object-contain" />
+              <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-4 sm:gap-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-2xl border border-white/30">
+                  <img src={logoMeiGestao} alt="MEI Gestão" className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain" />
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2 break-words">
                     Olá, {user?.user_metadata?.full_name || "MEI"}!
                   </h1>
-                  <p className="text-white/80 text-lg">
+                  <p className="text-white/80 text-sm sm:text-lg">
                     Bem-vindo ao seu painel de controle financeiro
                   </p>
                 </div>
@@ -1151,7 +1151,7 @@ const DashboardMEI = () => {
   return (
     <div className="min-h-screen flex w-full bg-background">
       <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
-      <main className="flex-1 p-6 lg:p-8 overflow-auto lg:ml-0 pt-20 lg:pt-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto lg:ml-0 pt-20 lg:pt-8 min-w-0">
         {renderContent()}
       </main>
     </div>
