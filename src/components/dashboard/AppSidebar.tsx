@@ -180,7 +180,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         </button>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-h-0">
           {menuItems.map((item) => {
             const isActive = isItemActive(item);
             return (
