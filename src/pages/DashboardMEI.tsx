@@ -19,6 +19,8 @@ import { ContadorInviteManager } from "@/components/contador/ContadorInviteManag
 import { ReceivedInvitesManager } from "@/components/mei/ReceivedInvitesManager";
 import { useForm } from "react-hook-form";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Lock } from "lucide-react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
 interface Revenue {
