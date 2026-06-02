@@ -921,6 +921,31 @@ const DashboardMEI = () => {
       case "impostos":
         return client && <TaxSimulation clientId={client.id} tipoAtividade={client.tipo_atividade} />;
       case "contador-gestao":
+        if (!(subscribed && planName === "Pro") && user?.email !== "mauricioxcontador@gmail.com") {
+          return (
+            <div className="max-w-2xl mx-auto">
+              <Card className="border-primary/30">
+                <CardHeader className="text-center">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-4">
+                    <Lock className="w-8 h-8 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl">Recurso exclusivo do Plano Pro</CardTitle>
+                  <CardDescription>
+                    A gestão de convites de contador está disponível apenas para assinantes do Plano Pro.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                  <Button
+                    onClick={() => navigate("/landing#pricing")}
+                    className="bg-gradient-to-r from-primary to-secondary text-white"
+                  >
+                    Fazer upgrade para Pro
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        }
         return (
           <div className="space-y-6">
             <div className="mb-8">
