@@ -1,22 +1,24 @@
-import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target, BarChart2, FileText, Users, Briefcase, Calculator, Tag } from "lucide-react";
+import { Home, DollarSign, TrendingDown, User, LogOut, Menu, X, Target, BarChart2, FileText, Users, Briefcase, Calculator, Tag, Lock } from "lucide-react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useProUpgrade } from "@/hooks/useProUpgrade";
+import { supabase } from "@/integrations/supabase/client";
 
 const meiMenuItems = [
   { title: "Dashboard", tab: "dashboard", icon: Home },
   { title: "Receitas", tab: "receitas", icon: DollarSign },
   { title: "Despesas", tab: "despesas", icon: TrendingDown },
   { title: "Impostos", tab: "impostos", icon: Calculator },
-  { title: "Trabalhista", tab: "trabalhista", icon: Briefcase, isRoute: true },
-  { title: "Precificação", tab: "precificacao", icon: Tag, isRoute: true },
-  { title: "Metas", tab: "metas", icon: Target, isRoute: true },
-  { title: "Gráficos", tab: "graficos", icon: BarChart2, isRoute: true },
+  { title: "Trabalhista", tab: "trabalhista", icon: Briefcase, isRoute: true, pro: true },
+  { title: "Precificação", tab: "precificacao", icon: Tag, isRoute: true, pro: true },
+  { title: "Metas", tab: "metas", icon: Target, isRoute: true, pro: true },
+  { title: "Gráficos", tab: "graficos", icon: BarChart2, isRoute: true, pro: true },
   { title: "Relatórios", tab: "relatorios", icon: FileText, isRoute: true },
-  { title: "Meu Contador", tab: "contador-gestao", icon: Users },
+  { title: "Meu Contador", tab: "contador-gestao", icon: Users, pro: true },
   { title: "Minha Conta", tab: "conta", icon: User },
 ];
 
@@ -37,6 +39,9 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isContador, isLoading: roleLoading } = useUserRole();
+  const { isPro, startProCheckout } = useProUpgrade();
+  const isWhitelistedEmail = userEmail === "mauricioxcontador@gmail.com";
+  const hasProAccess = isPro || isWhitelistedEmail;
   const currentTab = searchParams.get("tab") || "dashboard";
   const currentPath = location.pathname;
 
@@ -44,6 +49,12 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
     return isContador ? contadorMenuItems : meiMenuItems;
   }, [isContador]);
   const handleTabChange = (item: typeof menuItems[0]) => {
+    const isProItem = 'pro' in item && (item as any).pro;
+    if (isProItem && !hasProAccess && !isContador) {
+      startProCheckout();
+      return;
+    }
+
     // Close sidebar on mobile after navigation
     if (window.innerWidth < 1024) {
       setExpanded(false);
@@ -183,6 +194,8 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-h-0">
           {menuItems.map((item) => {
             const isActive = isItemActive(item);
+            const isProItem = 'pro' in item && (item as any).pro;
+            const showLock = isProItem && !hasProAccess && !isContador;
             return (
               <button
                 key={item.tab}
@@ -200,7 +213,16 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                   isActive ? "text-white" : "group-hover:scale-110"
                 )} />
                 {expanded && (
-                  <span className="font-medium truncate">{item.title}</span>
+                  <span className="font-medium truncate flex-1">{item.title}</span>
+                )}
+                {expanded && showLock && (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border border-primary/30">
+                    <Lock className="h-3 w-3" />
+                    PRO
+                  </span>
+                )}
+                {!expanded && showLock && (
+                  <Lock className="h-3 w-3 text-primary" />
                 )}
               </button>
             );
