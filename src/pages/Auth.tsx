@@ -78,24 +78,11 @@ const Auth = () => {
       if (signInError) throw signInError;
 
       if (signInData.user) {
-        // Trigger checkout immediately after auto-login
-        const plan = searchParams.get("plan") as keyof typeof PLANS | null;
-        if (plan && PLANS[plan]) {
-          try {
-            const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
-              body: { priceId: PLANS[plan].price_id },
-            });
-            if (checkoutError) throw checkoutError;
-            if (checkoutData?.url) {
-              window.location.href = checkoutData.url;
-              return;
-            }
-          } catch (err: any) {
-            console.error("Checkout after signup failed:", err);
-          }
-        }
+        toast({
+          title: "Conta criada com sucesso!",
+          description: "Bem-vindo ao MEI Gestão.",
+        });
 
-        // Fallback redirect if no checkout or checkout failed
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
