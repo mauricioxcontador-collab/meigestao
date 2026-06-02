@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useSubscription, PLANS } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -18,6 +18,7 @@ const ProRoute = ({ children }: ProRouteProps) => {
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -36,14 +37,34 @@ const ProRoute = ({ children }: ProRouteProps) => {
   const hasAccess = isWhitelisted || isPro;
 
   useEffect(() => {
-    if (authChecked && isAuthenticated && !subLoading && !hasAccess) {
+    const goToCheckout = async () => {
+      if (!authChecked || !isAuthenticated || subLoading || hasAccess || redirecting) return;
+      setRedirecting(true);
       toast({
         title: "Recurso exclusivo do Plano Pro",
-        description: "Faça upgrade para acessar esta funcionalidade.",
+        description: "Redirecionando para o checkout...",
       });
-      navigate("/landing#pricing", { replace: true });
-    }
-  }, [authChecked, isAuthenticated, subLoading, hasAccess, navigate, toast]);
+      try {
+        const { data, error } = await supabase.functions.invoke("create-checkout", {
+          body: { priceId: PLANS.pro.price_id },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
+        navigate("/dashboard", { replace: true });
+      } catch (err: any) {
+        toast({
+          title: "Erro ao iniciar checkout",
+          description: err.message ?? "Tente novamente.",
+          variant: "destructive",
+        });
+        navigate("/dashboard", { replace: true });
+      }
+    };
+    goToCheckout();
+  }, [authChecked, isAuthenticated, subLoading, hasAccess, navigate, toast, redirecting]);
 
   if (!authChecked || subLoading) {
     return (
