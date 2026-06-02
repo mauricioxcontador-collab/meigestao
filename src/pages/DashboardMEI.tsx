@@ -20,6 +20,7 @@ import { ReceivedInvitesManager } from "@/components/mei/ReceivedInvitesManager"
 import { useForm } from "react-hook-form";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useProUpgrade } from "@/hooks/useProUpgrade";
 import { Lock } from "lucide-react";
 import logoMeiGestao from "@/assets/logo-mei-gestao.png";
 
@@ -714,6 +715,7 @@ const DashboardMEI = () => {
 
   const { isContador, isLoading: roleLoading } = useUserRole();
   const { subscribed, planName } = useSubscription();
+  const { startProCheckout } = useProUpgrade();
 
   useEffect(() => {
     // Redirect contador users to their dashboard
@@ -936,7 +938,7 @@ const DashboardMEI = () => {
                 </CardHeader>
                 <CardContent className="flex justify-center">
                   <Button
-                    onClick={() => navigate("/landing#pricing")}
+                    onClick={startProCheckout}
                     className="bg-gradient-to-r from-primary to-secondary text-white"
                   >
                     Fazer upgrade para Pro
