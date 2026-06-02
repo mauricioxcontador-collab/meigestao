@@ -16,6 +16,7 @@ import LaborModule from "./pages/LaborModule";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProRoute from "./components/ProRoute";
 
 const queryClient = new QueryClient();
 
@@ -32,11 +33,11 @@ const App = () => (
           <Route path="/dashboard" element={<ProtectedRoute><DashboardMEI /></ProtectedRoute>} />
           <Route path="/contador" element={<ProtectedRoute><DashboardContador /></ProtectedRoute>} />
           <Route path="/aceitar-convite" element={<AcceptInvite />} />
-          <Route path="/metas" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
-          <Route path="/graficos" element={<ProtectedRoute><PerformanceCharts /></ProtectedRoute>} />
+          <Route path="/metas" element={<ProRoute><Goals /></ProRoute>} />
+          <Route path="/graficos" element={<ProRoute><PerformanceCharts /></ProRoute>} />
           <Route path="/relatorios" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-          <Route path="/trabalhista" element={<ProtectedRoute><LaborModule /></ProtectedRoute>} />
-          <Route path="/precificacao" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
+          <Route path="/trabalhista" element={<ProRoute><LaborModule /></ProRoute>} />
+          <Route path="/precificacao" element={<ProRoute><Pricing /></ProRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
