@@ -713,6 +713,9 @@ const DashboardMEI = () => {
   const currentTab = searchParams.get("tab") || "dashboard";
 
   const { isContador, isLoading: roleLoading } = useUserRole();
+  const { subscribed, planName } = useSubscription();
+  const userEmail = (typeof window !== "undefined" && (window as any).__userEmail) || "";
+  const isPro = (subscribed && planName === "Pro");
 
   useEffect(() => {
     // Redirect contador users to their dashboard
