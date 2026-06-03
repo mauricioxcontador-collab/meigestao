@@ -1179,8 +1179,6 @@ const DashboardMEI = () => {
     }
   };
 
-  const { subscribed, planName } = useSubscription();
-  const isPro = subscribed && planName === "Pro";
 
   return (
     <div className="min-h-screen flex w-full bg-background">
