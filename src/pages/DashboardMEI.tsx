@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet, Loader2 } from "lucide-react";
+import { DollarSign, TrendingUp, AlertCircle, TrendingDown, Plus, Save, X, Pencil, Trash2, Calendar, Wallet, Loader2, Crown } from "lucide-react";
 import { TaxSimulation } from "@/components/tax/TaxSimulation";
 import { MonthlyGrowthChart } from "@/components/charts/MonthlyGrowthChart";
 import { useToast } from "@/hooks/use-toast";
@@ -1193,12 +1193,19 @@ const DashboardMEI = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
-            <Badge
-              variant={isPro ? "default" : "secondary"}
-              className={isPro ? "bg-gradient-to-r from-primary to-secondary text-white border-0" : ""}
-            >
-              {isPro ? "Plano PRO" : "Plano Básico"}
-            </Badge>
+            {isPro ? (
+              <Badge
+                variant="default"
+                className="bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0 gap-1.5"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                Plano PRO
+              </Badge>
+            ) : (
+              <Badge variant="secondary">
+                Plano Básico
+              </Badge>
+            )}
           </div>
         </div>
         {renderContent()}
