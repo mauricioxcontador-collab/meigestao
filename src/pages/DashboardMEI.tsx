@@ -1179,10 +1179,29 @@ const DashboardMEI = () => {
     }
   };
 
+  const { subscribed, planName } = useSubscription();
+  const isPro = subscribed && planName === "Pro";
+
   return (
     <div className="min-h-screen flex w-full bg-background">
       <AppSidebar userEmail={user?.email || ""} onLogout={handleLogout} />
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto lg:ml-0 pt-20 lg:pt-8 min-w-0">
+        {/* Top Header Bar */}
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/50">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Bem-vindo de volta!</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
+            <Badge
+              variant={isPro ? "default" : "secondary"}
+              className={isPro ? "bg-gradient-to-r from-primary to-secondary text-white border-0" : ""}
+            >
+              {isPro ? "Plano PRO" : "Plano Básico"}
+            </Badge>
+          </div>
+        </div>
         {renderContent()}
       </main>
     </div>
