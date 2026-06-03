@@ -716,6 +716,7 @@ const DashboardMEI = () => {
 
   const { isContador, isLoading: roleLoading } = useUserRole();
   const { subscribed, planName } = useSubscription();
+  const isPro = subscribed && planName === "Pro";
   const { startProCheckout } = useProUpgrade();
 
   useEffect(() => {
