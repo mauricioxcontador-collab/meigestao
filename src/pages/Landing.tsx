@@ -382,25 +382,41 @@ const Landing = () => {
                 <div className="mb-6">
                   <h3 className="text-xl font-bold mb-2">Básico</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">R$ {isQuarterly ? '99,99' : '39,90'}</span>
-                    <span className="text-muted-foreground">/{isQuarterly ? 'trimestre' : 'mês'}</span>
+                    <span className="text-4xl font-bold">Grátis</span>
+                    <span className="text-muted-foreground">/para sempre</span>
                   </div>
-                  {isQuarterly && (
-                    <p className="text-sm text-accent mt-2">Equivale a R$ 33,33/mês</p>
-                  )}
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Recursos essenciais para começar a organizar seu MEI
+                  </p>
                 </div>
                 
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {["Dashboard completo", "Controle receitas/despesas", "Alertas por e-mail", "Relatórios PDF", "Cálculo automático DAS"].map((item, i) => (
+                  {[
+                    "Dashboard completo",
+                    "Controle de receitas e despesas",
+                    "Cálculo automático do DAS",
+                    "Gestão de impostos",
+                    "Relatórios em PDF",
+                    "Alertas por e-mail",
+                  ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-accent" />
-                      <span>{item}</span>
+                      <Check className="w-5 h-5 text-accent flex-shrink-0" />
+                      <span className="font-medium">{item}</span>
                     </li>
                   ))}
-                  {["Alertas WhatsApp", "Suporte prioritário"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                      <X className="w-5 h-5" />
-                      <span>{item}</span>
+                  {[
+                    "Módulo Trabalhista",
+                    "Precificação inteligente",
+                    "Metas e gamificação",
+                    "Gráficos avançados",
+                    "Meu Contador (conexão direta)",
+                    "Alertas via WhatsApp",
+                    "IA Assistente",
+                    "Suporte prioritário",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-muted-foreground/70">
+                      <X className="w-5 h-5 flex-shrink-0" />
+                      <span className="line-through">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -408,10 +424,9 @@ const Landing = () => {
                 <Button
                   variant="outline"
                   className="w-full h-12 font-semibold"
-                  disabled={loadingPlan === "basico" || (subscribed && planName === "Básico")}
-                  onClick={() => handleCheckout(PLANS.basico.price_id, "basico")}
+                  onClick={() => navigate(session ? "/dashboard" : "/auth")}
                 >
-                  {subscribed && planName === "Básico" ? "Plano Atual" : loadingPlan === "basico" ? "Carregando..." : "Assinar Agora"}
+                  {session ? "Acessar Dashboard" : "Começar agora"}
                 </Button>
               </Card>
             </motion.div>
@@ -429,7 +444,10 @@ const Landing = () => {
                 </div>
                 
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2">Pro</h3>
+                  <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                    Pro
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </h3>
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-bold">R$ {isQuarterly ? '126,99' : '49,90'}</span>
                     <span className="text-muted-foreground">/{isQuarterly ? 'trimestre' : 'mês'}</span>
@@ -437,13 +455,27 @@ const Landing = () => {
                   {isQuarterly && (
                     <p className="text-sm text-accent mt-2">Equivale a R$ 42,33/mês</p>
                   )}
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Todos os recursos para escalar o seu negócio
+                  </p>
                 </div>
                 
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {["Tudo do Básico", "Alertas WhatsApp", "Chat com contador", "Relatórios avançados", "Suporte prioritário", "IA Assistente"].map((item, i) => (
+                  {[
+                    "Tudo do plano Básico",
+                    "Módulo Trabalhista (folha, FGTS, INSS)",
+                    "Precificação inteligente",
+                    "Metas e gamificação",
+                    "Gráficos e análises avançadas",
+                    "Meu Contador (conexão direta)",
+                    "Relatórios avançados em PDF",
+                    "Alertas via WhatsApp",
+                    "IA Assistente integrada",
+                    "Suporte prioritário",
+                  ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-accent" />
-                      <span>{item}</span>
+                      <Check className="w-5 h-5 text-accent flex-shrink-0" />
+                      <span className="font-medium">{item}</span>
                     </li>
                   ))}
                 </ul>
